@@ -124,7 +124,7 @@ const RiskScreen = ({ props, navigation }) => {
       zIndex: 2
     },
     cardContainer: {
-      alignItems: "center",
+      alignItems: "space-around",
       width: width * 0.8,
       justifyContent: "flex-start",
       display: "flex",
@@ -147,7 +147,7 @@ const RiskScreen = ({ props, navigation }) => {
       justifyContent: "center",
       display: "flex",
       flexDirection: "column",
-      marginTop: 80
+      marginTop: 40
     },
     textIndex: {
       fontSize: 10,
