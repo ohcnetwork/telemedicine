@@ -6,8 +6,8 @@ import useTheme from '../constants/theme';
 import { saveToStore } from '../store/actions/SaveAsync';
 
 const IndexScreen = ({ props, navigation }) => {
-    const theme = useTheme();
-    const dispatch = useDispatch();
+  const theme = useTheme();
+  const dispatch = useDispatch();
   const [asyncState, setAsyncState] = useState({});
   let saveAsync = useSelector(state => {
     return state.AsyncStorageReducer;

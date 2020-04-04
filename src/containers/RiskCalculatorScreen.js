@@ -23,12 +23,14 @@ const RiskScreen = ({ props, navigation }) => {
   const dispatch = useDispatch();
   const [language, setNewLanguage] = useLanguage();
   const [asyncState, setAsyncState] = useState({});
-  const [questions, setQuestions] = useState([]);
+  const [questions, setQuestions] = useState({});
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [answers, setAnswers] = useState({});
-  const [activeQuestionCount, setActiveQuestionCount] = useState(0);
+  const [activeQuestionCount, setActiveQuestionCount] = useState(1);
   const [total, setTotal] = useState(0);
   const [user, setUser] = useState(null);
+  const [answerState, setAnswerState] = useState(false);
+
   let saveAsync = useSelector(state => {
     return state.AsyncStorageReducer;
   });
@@ -38,6 +40,7 @@ const RiskScreen = ({ props, navigation }) => {
   Promise.resolve(saveAsync).then(value => {
     setAsyncState(value);
   });
+  console.log(executeDataResponse);
 
   useEffect(() => {
     if (language) {
@@ -55,17 +58,17 @@ const RiskScreen = ({ props, navigation }) => {
   });
 
   useEffect(() => {
-    if (questions.length === 0) {
+    if (Object.keys(questions).length === 0) {
       if (at(executeDataResponse, "FETCH_QUESTIONS.isDone")) {
         setQuestions(at(executeDataResponse, "FETCH_QUESTIONS.data"));
-        setActiveQuestion(at(executeDataResponse, "FETCH_QUESTIONS.data.0"));
+        setActiveQuestion(at(executeDataResponse, "FETCH_QUESTIONS.data.1"));
         setUser(at(asyncState, "metaData.activeUser"));
       }
     }
   });
 
   useEffect(() => {
-    if(questions.length > 0 ){
+    if (Object.keys(questions).length > 0) {
       if (user !== at(asyncState, "metaData.activeUser")) {
         setUser(asyncState, "metaData.activeUser");
         dispatch(
@@ -73,16 +76,13 @@ const RiskScreen = ({ props, navigation }) => {
             type: "FETCH_QUESTIONS"
           })
         );
-        setQuestions([]);
-        setActiveQuestionCount(0);
+        setQuestions({});
+        setActiveQuestionCount(1);
         setAnswers({});
         setTotal(0);
       }
     }
-   
   });
-
-  
 
   let width = Math.round(Dimensions.get("window").width);
   let height = Math.round(Dimensions.get("window").height);
@@ -147,7 +147,7 @@ const RiskScreen = ({ props, navigation }) => {
       justifyContent: "center",
       display: "flex",
       flexDirection: "column",
-      marginTop: 150
+      marginTop: 100
     },
     textIndex: {
       fontSize: 10,
@@ -157,9 +157,7 @@ const RiskScreen = ({ props, navigation }) => {
     buttonContainer: {
       alignItems: "center",
       width: width * 0.8,
-      justifyContent: "space-evenly",
       display: "flex",
-      flex: 1,
       zIndex: 10
     },
     question: {
@@ -178,50 +176,126 @@ const RiskScreen = ({ props, navigation }) => {
     }
   });
 
-  const handleAnswerChoose = id => {
+  const handleAnswerChoose = value => {
     let answer = answers;
     let totalValue = total;
-    let allAnswers = JSON.parse(activeQuestion.answers);
-    totalValue = totalValue + at(allAnswers, `${id}.weight`);
-    answer[activeQuestion.questionId] = at(allAnswers, `${id}.weight`);
-    setAnswers(answer);
-    setTotal(totalValue);
-    console.log(activeQuestionCount + 1 < questions.length+ 1, activeQuestionCount, questions.length )
-    if (activeQuestionCount + 1 < questions.length) {
-      setActiveQuestion(questions[activeQuestionCount + 1]);
-      setActiveQuestionCount(activeQuestionCount + 1);
-    } else {
-      dispatch(
-        executeData({
-          type: "SEND_ANSWERS",
-          token: asyncState.token,
-          method: "POST",
-          req: JSON.stringify({
-            answers: answers,
-            score: totalValue === total ? total : totalValue,
-            name: at(asyncState, "metaData.fullname")
-          })
-        })
-      );
+    console.log(Object.keys(questions).length > activeQuestionCount)
+
+    switch (value) {
+      case 0:
+        
+        if (Object.keys(questions).length > activeQuestionCount) {
+          setActiveQuestion(
+            at(
+              executeDataResponse,
+              `FETCH_QUESTIONS.data.${activeQuestionCount + 1}`
+            )
+          );
+          setActiveQuestionCount(activeQuestionCount + 1);
+        } else {
+          handleSubmitAnswerDispatch(totalValue, answer);
+        }
+        break;
+      case 1:
+        totalValue = totalValue + at(activeQuestion, "mild");
+        answer[activeQuestionCount] = at(activeQuestion, "mild");
+        setTotal(totalValue);
+        setAnswerState(false);
+        if (Object.keys(questions).length > activeQuestionCount) {
+          setActiveQuestion(
+            at(
+              executeDataResponse,
+              `FETCH_QUESTIONS.data.${activeQuestionCount + 1}`
+            )
+          );
+          setActiveQuestionCount(activeQuestionCount + 1);
+        } else {
+          handleSubmitAnswerDispatch(totalValue, answer);
+        }
+        break;
+      case 2:
+        totalValue = totalValue + at(activeQuestion, "medium");
+        answer[activeQuestionCount] = at(activeQuestion, "medium");
+        setTotal(totalValue);
+        setAnswerState(false);
+        if (Object.keys(questions).length > activeQuestionCount) {
+          setActiveQuestion(
+            at(
+              executeDataResponse,
+              `FETCH_QUESTIONS.data.${activeQuestionCount + 1}`
+            )
+          );
+          setActiveQuestionCount(activeQuestionCount + 1);
+        } else {
+          handleSubmitAnswerDispatch(totalValue, answer);
+        }
+        break;
+      case 3:
+        totalValue = totalValue + at(activeQuestion, "high");
+        answer[activeQuestionCount] = at(activeQuestion, "high");
+        setTotal(totalValue);
+        setAnswerState(false);
+        if (Object.keys(questions).length > activeQuestionCount) {
+          setActiveQuestion(
+            at(
+              executeDataResponse,
+              `FETCH_QUESTIONS.data.${activeQuestionCount + 1}`
+            )
+          );
+          setActiveQuestionCount(activeQuestionCount + 1);
+        } else {
+          handleSubmitAnswerDispatch(totalValue, answer);
+        }
+        break;
+      default:
+        break;
     }
   };
-  console.log((activeQuestionCount + 1 === questions.length))
+
+  const handleSubmitAnswerDispatch = (totalValue, answer) => {
+    dispatch(
+      executeData({
+        type: "SEND_ANSWERS",
+        token: asyncState.token,
+        method: "POST",
+        req: JSON.stringify({
+          answers: answer,
+          score: totalValue === total ? total : totalValue,
+          id: at(asyncState, "metaData.id")
+        })
+      })
+    );
+  };
+
+  const handleCardBackPress = () => {
+    if(activeQuestionCount > 1) 
+    {
+      setActiveQuestionCount(activeQuestionCount - 1);
+      setActiveQuestion(
+        at(
+          executeDataResponse,
+          `FETCH_QUESTIONS.data.${activeQuestionCount - 1}`
+        )
+      );
+    }
+  }
 
   useEffect(() => {
-    if((activeQuestionCount + 1 === questions.length)) {
-      if(at(executeDataResponse, 'SEND_ANSWERS.isDone')) {
-        let dataResponse = at(executeDataResponse, 'SEND_ANSWERS.data');
-        console.log(dataResponse)
-        navigation.navigate('result', {data: dataResponse});
-        setActiveQuestionCount(0);
+    if (activeQuestionCount  === Object.keys(questions).length) {
+      if (at(executeDataResponse, "SEND_ANSWERS.isDone")) {
+        let dataResponse = at(executeDataResponse, "SEND_ANSWERS.data");
+        navigation.navigate("Result", { data: dataResponse });
+        setActiveQuestionCount(1);
         setAnswers({});
         setTotal(0);
-        dispatch(clearData({
-          type: 'SEND_ANSWERS'
-        }))
+        dispatch(
+          clearData({
+            type: "SEND_ANSWERS"
+          })
+        );
       }
     }
-  })
+  });
 
   return (
     <View style={styles.root}>
@@ -257,6 +331,11 @@ const RiskScreen = ({ props, navigation }) => {
               shadow={true}
               content={
                 <View style={styles.cardContainer}>
+                 <View style={[{alignItems: 'flex-start', display: 'flex', width: width * 0.8, marginVertical: 5}]}>
+                   {(activeQuestionCount > 1) ? <TouchableOpacity onPress={() => handleCardBackPress()}>
+                     <AntDesign name="arrowleft" size={18} color={theme.button} />
+                   </TouchableOpacity> : null}
+                   </View>
                   <View style={styles.index}>
                     <AntDesign
                       style={{ marginRight: 5 }}
@@ -265,13 +344,15 @@ const RiskScreen = ({ props, navigation }) => {
                       color={theme.success}
                     />
                     <Text style={styles.textIndex}>
-                      {activeQuestionCount + 1} / {questions.length}
+                      {activeQuestionCount} / {Object.keys(questions).length}
                     </Text>
                   </View>
                   <View>
                     <View style={styles.questionContainer}>
                       <Text style={styles.questionText}>
-                        {activeQuestion.question}
+                        {!answerState
+                          ? activeQuestion.question
+                          : activeQuestion.subQuestion}
                       </Text>
                     </View>
                   </View>
@@ -279,57 +360,90 @@ const RiskScreen = ({ props, navigation }) => {
               }
             />
           </View>
-          {activeQuestion.type === "button" ? (
+          {!answerState ? (
             <View
-              style={{
-                ...styles.buttonContainer,
-                ...{
-                  flexDirection: JSON.parse(activeQuestion.answers).option3
-                    ? "row"
-                    : "row"
+              style={[
+                styles.buttonContainer,
+                {
+                  flexDirection: "row",
+                  justifyContent: "space-around"
                 }
-              }}
+              ]}
             >
               <ContainedButton
                 mLeft={2}
                 mRight={2}
                 width={width * 0.25}
                 onPress={() => {
-                  handleAnswerChoose("option1");
+                  handleAnswerChoose(0);
                 }}
                 fontSize={12}
                 color={theme.success}
-                text={JSON.parse(activeQuestion.answers).option1.text}
+                text={i18n.t("no")}
                 textColor={theme.white}
               />
               <ContainedButton
                 onPress={() => {
-                  handleAnswerChoose("option2");
+                  setAnswerState(true);
                 }}
                 mLeft={2}
                 fontSize={12}
                 mRight={2}
                 width={width * 0.25}
-                text={JSON.parse(activeQuestion.answers).option2.text}
+                text={i18n.t("yes")}
                 color={theme.button}
                 textColor={theme.white}
               />
-              {JSON.parse(activeQuestion.answers).option3 ? (
-                <ContainedButton
-                  onPress={() => {
-                    handleAnswerChoose("option3");
-                  }}
-                  mLeft={2}
-                  fontSize={12}
-                  width={width * 0.25}
-                  mRight={2}
-                  text={JSON.parse(activeQuestion.answers).option3.text}
-                  color={theme.error}
-                  textColor={theme.white}
-                />
-              ) : null}
             </View>
-          ) : null}
+          ) : (
+            <View
+              style={[
+                styles.buttonContainer,
+                {
+                  flexDirection: "row",
+                  justifyContent: "space-around"
+                }
+              ]}
+            >
+              <ContainedButton
+                mLeft={2}
+                mRight={2}
+                width={width * 0.25}
+                onPress={() => {
+                  handleAnswerChoose(1);
+                }}
+                fontSize={12}
+                color={theme.success}
+                text={i18n.t("mild")}
+                textColor={theme.white}
+              />
+              <ContainedButton
+                onPress={() => {
+                  handleAnswerChoose(2);
+                }}
+                mLeft={2}
+                fontSize={12}
+                mRight={2}
+                width={width * 0.25}
+                text={i18n.t("medium")}
+                color={theme.button}
+                textColor={theme.white}
+              />
+
+              <ContainedButton
+                onPress={() => {
+                  handleAnswerChoose(3);
+                }}
+                mLeft={2}
+                fontSize={12}
+                width={width * 0.25}
+                mRight={2}
+                text={i18n.t("high")}
+                color={theme.error}
+                textColor={theme.white}
+              />
+            </View>
+          )}
         </View>
       ) : null}
     </View>

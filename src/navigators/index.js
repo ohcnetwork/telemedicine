@@ -25,7 +25,7 @@ const HomeNavigator = createStackNavigator({
 
       },
   },
-  result: {
+  Result: {
     screen: ResultScreen,
     navigationOptions: {
       headerShown: false,
@@ -55,11 +55,21 @@ const AuthNavigator = createStackNavigator({
     }
   
   });
+
+const chooseUserNavigator = createStackNavigator({
+  'Change_User': {
+    screen: ChooseScreen,
+    navigationOptions: {
+      headerShown: false,
+
+
+    },
+  },
+})
 const MyDrawerNavigator = createDrawerNavigator({
   Home: HomeNavigator,
-  'Change User': {
-    screen: ChooseScreen,
-  },
+  'Change User': chooseUserNavigator
+  
 }, {
   contentComponent: Drawer,  
   drawerWidth: Math.round(Dimensions.get('window').width * 0.7),

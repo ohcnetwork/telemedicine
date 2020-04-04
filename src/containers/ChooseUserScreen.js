@@ -29,6 +29,7 @@ const ChooseScreen = ({ props, navigation }) => {
   const dispatch = useDispatch();
   const [asyncState, setAsyncState] = useState({});
   const [listData, setData] = useState([]);
+ 
   let saveAsync = useSelector(state => {
     return state.AsyncStorageReducer;
   });
@@ -42,7 +43,7 @@ const ChooseScreen = ({ props, navigation }) => {
   useEffect(() => {
     if (listData.length === 0) {
       if (at(executeDataResponse, "GET_ALL_USERS.isDone")) {
-        let dataValue = [...at(executeDataResponse, "GET_ALL_USERS.data")];
+        let dataValue = at(executeDataResponse, "GET_ALL_USERS.data").length > 0 ? [...at(executeDataResponse, "GET_ALL_USERS.data")] : [];
         dataValue.push({ end: true });
         setData(dataValue);
         dispatch(
@@ -69,11 +70,12 @@ const ChooseScreen = ({ props, navigation }) => {
 
   let width = Math.round(Dimensions.get("window").width);
   let height = Math.round(Dimensions.get("window").height);
-  const handleChooseUser = name => {
+  const handleChooseUser = (name, id) => {
     dispatch(
       saveToStore({
         metaData: {
-          activeUser: name
+          activeUser: name,
+          id: id
         }
       })
     );
@@ -86,11 +88,11 @@ const ChooseScreen = ({ props, navigation }) => {
       backgroundColor: theme.background,
       width: width,
       height: height,
-      flex: 1
+      flex: 1,
     },
     header: {
       position: "relative",
-      zIndex: 3,
+      zIndex: 103,
       width: width * 0.8,
       marginTop: 60,
       display: "flex",
@@ -101,7 +103,7 @@ const ChooseScreen = ({ props, navigation }) => {
     headerText: {
       fontSize: 22,
       fontWeight: "bold",
-      color: theme.text
+      color: theme.white
     },
     gradient: {
       position: "absolute",
@@ -109,12 +111,11 @@ const ChooseScreen = ({ props, navigation }) => {
       left: 0,
       height: height,
       width: width,
-      zIndex: 1
     },
     content: {
       width: width * 0.8,
       position: "relative",
-      zIndex: 10,
+      zIndex: 100,
       marginTop: 75,
       height: height * 0.8,
       display: "flex",
@@ -130,7 +131,7 @@ const ChooseScreen = ({ props, navigation }) => {
       fontSize: 16,
       fontWeight: "bold",
       marginBottom: 40,
-      color: theme.text
+      color: theme.white
     },
     nameText: {
       fontSize: 12,
@@ -167,18 +168,18 @@ const ChooseScreen = ({ props, navigation }) => {
         <TouchableOpacity
           onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
         >
-          <AntDesign name="menu-unfold" size={22} color={theme.text} />
+          <AntDesign name="menu-unfold" size={22} color={theme.white} />
         </TouchableOpacity>
       </View>
       <View style={styles.gradient}>
         <Svg height="100%" width="100%">
           <Defs>
-            <LinearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+            <LinearGradient id="grad43" x1="0" y1="0" x2="0" y2="1">
               <Stop offset="0" stopColor={theme.active} stopOpacity="1" />
               <Stop offset="1" stopColor={theme.button} stopOpacity="1" />
             </LinearGradient>
           </Defs>
-          <Circle cx={width} cy={0} r={height} fill="url(#grad)" />
+          <Circle cx={width} cy={0} r={height} fill="url(#grad43)" />
         </Svg>
       </View>
       <View style={styles.content}>
@@ -188,16 +189,17 @@ const ChooseScreen = ({ props, navigation }) => {
           numColumns={3}
           contentContainerStyle={styles.cards}
           data={listData}
-          renderItem={({ item }) => {
+          renderItem={({item }) => {
+            if(item) {
             if (!item.end) {
               return (
                 <TouchableOpacity
-                  onPress={() => handleChooseUser(item.fullname)}
+                  onPress={() => handleChooseUser(item.name, item.id)}
                 >
                   <View style={styles.userCard}>
                     <AntDesign name="idcard" color={theme.white} size={30} />
                     <Text style={styles.nameText}>
-                      {item.fullname.split(" ")[0]}
+                      {item.name.split(" ")[0]}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -215,7 +217,11 @@ const ChooseScreen = ({ props, navigation }) => {
                 </TouchableOpacity>
               );
             }
-          }}
+          }else {
+            return null;
+          }
+        } 
+        }
           keyExtractor={item => item.id}
         />
       </View>

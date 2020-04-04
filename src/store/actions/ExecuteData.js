@@ -22,7 +22,9 @@ let executeDataConfig = {
   SEND_ANSWERS:{ url : "https://tele.coronasafe.in/api/answers/submit"} ,
   GET_ALL_USERS: {url : "https://tele.coronasafe.in/api/user/all/get"},
   DISTRICT_LIST: {url : "https://api.care.coronasafe.in/api/v1/state/1/districts/"},
-  LOCAL_BODY_LIST: {url: "https://api.care.coronasafe.in/api/v1/local_body/"}
+  LOCAL_BODY_LIST: {url: "https://api.care.coronasafe.in/api/v1/local_body/"},
+  RISK_RESULT_DATA: {url: "http://volunteer.coronasafe.network/api/reports"},
+  REQUEST_CALL_USER: { url: "https://tele.coronasafe.in/api/user/schedule"}
 };
 
 export const executeData =  payload => {

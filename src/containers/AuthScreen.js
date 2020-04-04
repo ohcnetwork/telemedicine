@@ -226,6 +226,8 @@ const AuthScreen = ({ navigation, props }) => {
               setView("NAME");
             }
           }
+        } else {
+          setOTPError('Invalid OTP')
         }
       }
     } else if (view === "DISTRICT") {
@@ -251,6 +253,29 @@ const AuthScreen = ({ navigation, props }) => {
         }
       }
     }
+    else if (view === "CHRONIC_DISEASE") {
+      if (at(executeDataResponse, "UPDATE_USER_DATA.isDone")) {
+        if (loader) {
+          setLocality(at(executeDataResponse, "UPDATE_USER_DATA.data.message"));
+          dispatch(
+            saveToStore({
+              metaData: { primary: true }
+            })
+          );
+          if(at(asyncState, 'metaData.primary'))
+          {
+
+            setLoader(false);
+            navigation.navigate('home');
+          }
+         
+        } else {
+          if (loader) {
+            setLoader(false);
+          }
+        }
+      }
+    }
   });
   console.log(executeDataResponse);
 
@@ -266,6 +291,7 @@ const AuthScreen = ({ navigation, props }) => {
       saveToStoreTokenAndData({
         metaData: {
           primary: true,
+        ...JSON.parse(at(executeDataResponse, "SEND_OTP_CHECK.data.userInfo")),
           activeUser: at(asyncState, "metaData.fullname"),
           fullname: at(
             executeDataResponse,
@@ -460,21 +486,18 @@ const AuthScreen = ({ navigation, props }) => {
         setView("AGE_QUESTION");
         break;
       case "AGE_QUESTION":
-        dispatch(saveToStore({ metaData: { age_relative: value } }));
+        dispatch(saveToStore({ metaData: { number_of_aged_dependents: value } }));
         setView("RELATIVE_CHRONIC_DISEASE");
         break;
       case "RELATIVE_CHRONIC_DISEASE":
         dispatch(
           saveToStore({
-            metaData: { relative_chronic_disease: value }
+            metaData: { number_of_chronic_diseased_dependents: value }
           })
         );
         setView("CHRONIC_DISEASE");
         break;
       case "CHRONIC_DISEASE":
-        dispatch(
-          saveToStore({ metaData: { chronic_disease: value } })
-        );
         handleRiskScreenNav();
         break;
       default:
@@ -498,9 +521,10 @@ const AuthScreen = ({ navigation, props }) => {
       dataExecute.local_body = data.metaData.local_body;
       dataExecute.district = data.metaData.district;
       dataExecute.no_of_people = data.metaData.no_of_people;
-      dataExecute.age_relative = data.metaData.age_relative;
-      dataExecute.relative_chronic_disease = data.metaData.relative_chronic_disease;
+      dataExecute.number_of_aged_dependents = data.metaData.number_of_aged_dependents ? 1 : 0;
+      dataExecute.number_of_chronic_diseased_dependents = data.metaData.number_of_chronic_diseased_dependents ? 1 : 0;
       dataExecute.state = 1;
+      dataExecute.primary = true;
       dataExecute.medical_history = chronicDisease;
       let local_body_object = {};
       let district_object = {};
@@ -535,6 +559,10 @@ const AuthScreen = ({ navigation, props }) => {
           method: "POST"
         })
       );
+      dispatch(saveToStore({
+        metaData: { local_body_object: local_body_object, district_object: district_object  }
+      }))
+      setLoader(true);
       // dispatch(
       //   saveToStore({
       //     metaData: {
@@ -542,7 +570,6 @@ const AuthScreen = ({ navigation, props }) => {
       //     }
       //   })
       // );
-      // navigation.navigate("home");
     }
   };
 
@@ -721,9 +748,9 @@ const AuthScreen = ({ navigation, props }) => {
                   selectedLocality(parseInt(value, 10));
                 }
               }}
-              items={locality.map(item => {
+              items={!loader ? locality.map(item => {
                 return { label: item.name, value: item.id };
-              })}
+              }): []}
             />
           </View>
           <Text style={styles.labelText2}>{i18n.t("pincode")}</Text>

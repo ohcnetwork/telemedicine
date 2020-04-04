@@ -27,7 +27,7 @@ import i18n from "i18n-js";
 const ChooseScreen = ({ props, navigation }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  const [asyncState, setAsyncState] = useState({});
+  const [asyncState, setAsyncState] = useState();
   const [listData, setData] = useState([]);
   let saveAsync = useSelector(state => {
     return state.AsyncStorageReducer;
@@ -42,7 +42,8 @@ const ChooseScreen = ({ props, navigation }) => {
   useEffect(() => {
     if (listData.length === 0) {
       if (at(executeDataResponse, "GET_ALL_USERS.isDone")) {
-        let dataValue = [...at(executeDataResponse, "GET_ALL_USERS.data")];
+        let dataValue = at(executeDataResponse, "GET_ALL_USERS.data").length > 0 ? [...at(executeDataResponse, "GET_ALL_USERS.data")] : [];
+
         dataValue.push({ end: true });
         setData(dataValue);
         dispatch(
@@ -54,7 +55,7 @@ const ChooseScreen = ({ props, navigation }) => {
     }
   });
   useEffect(() => {
-    if (asyncState.token) {
+    if (at(asyncState, 'token')) {
       if (!at(executeDataResponse, "GET_ALL_USERS.isInitiated")) {
         dispatch(
           executeData({
@@ -69,11 +70,12 @@ const ChooseScreen = ({ props, navigation }) => {
 
   let width = Math.round(Dimensions.get("window").width);
   let height = Math.round(Dimensions.get("window").height);
-  const handleChooseUser = name => {
+  const handleChooseUser = (name, id) => {
     dispatch(
       saveToStore({
         metaData: {
-          activeUser: name
+          activeUser: name,
+          id: id
         }
       })
     );
@@ -187,12 +189,12 @@ const ChooseScreen = ({ props, navigation }) => {
             if (!item.end) {
               return (
                 <TouchableOpacity
-                  onPress={() => handleChooseUser(item.fullname)}
+                  onPress={() => handleChooseUser(item.name, item.id)}
                 >
                   <View style={styles.userCard}>
                     <AntDesign name="idcard" color={theme.white} size={30} />
                     <Text style={styles.nameText}>
-                      {item.fullname.split(" ")[0]}
+                      {item.name.split(" ")[0]}
                     </Text>
                   </View>
                 </TouchableOpacity>

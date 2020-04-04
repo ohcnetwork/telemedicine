@@ -43,7 +43,7 @@ return(
     <View style={styles.root}>
         <View style={styles.userCard}>
             <AntDesign name="user" size={30}  color={theme.button}/>
-            <Text style={styles.userName}>{at(asyncState  ,'metaData.activeUser') ? at(asyncState  ,'metaData.activeUser') : at(asyncState  ,'metaData.fullname')}</Text>
+            <Text style={styles.userName}>{at(asyncState  ,'metaData.activeUser') ? at(asyncState  ,'metaData.activeUser') : at(asyncState  ,'metaData.name')}</Text>
 
         </View>
     <View style={styles.DrawerItems}>
