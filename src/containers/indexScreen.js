@@ -23,6 +23,7 @@ const IndexScreen = ({ props, navigation }) => {
     let token = asyncState.token;
     let primary = at(asyncState , 'metaData.primary');
     let multiple = at(asyncState , 'metaData.multiple');
+    let role = at(asyncState , 'metaData.ROLE');
 
     if (token) {
         if(token && primary) {
@@ -36,8 +37,8 @@ const IndexScreen = ({ props, navigation }) => {
                 }))
                 navigation.navigate("home");
             }
-        } else {
-            navigation.navigate("auth");
+        } else if(token && role) {
+            navigation.navigate("dashboard", {ROLE: role});
         }   
     } else 
     {

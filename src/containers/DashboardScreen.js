@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import at from "v-at";
 
 import {
   StyleSheet,
@@ -14,6 +16,7 @@ import i18n from "i18n-js";
 import * as Device from "expo-device";
 import Table from "../components/table/Table";
 import { ContainedButton } from "../components/button/Button";
+import { executeData } from "../store/actions/ExecuteData";
 async function getDevice() {
   let device = 0;
   device = await Device.getDeviceTypeAsync();
@@ -21,22 +24,10 @@ async function getDevice() {
 }
 
 const DashboardScreen = ({ props, navigation }) => {
+  const theme = useTheme();
+  const device = getDevice();
   let width = Math.round(Dimensions.get("window").width);
   let height = Math.round(Dimensions.get("window").height);
-  const [desktop, setDesktop] = useState(false);
-  const [tab, setTab] = useState("HOME");
-  const [subTab, setSubTab] = useState("PATIENT");
-  const device = getDevice();
-  Promise.resolve(device).then(deviceName => {
-    let devices = Device.DeviceType;
-    if (deviceName in devices) {
-      if (devices[deviceName] === "DESKTOP") {
-        setDesktop(true);
-      }
-    }
-  });
-
-  const theme = useTheme();
   const styles = StyleSheet.create({
     root: {
       backgroundColor: theme.backgroundDashboard,
@@ -264,6 +255,71 @@ const DashboardScreen = ({ props, navigation }) => {
       fontWeight: 'bold'
     }
   });
+  const dispatch = useDispatch();
+
+
+
+
+
+  const [asyncState, setAsyncState] = useState({});
+  const [desktop, setDesktop] = useState(false);
+  const [tab, setTab] = useState("HOME");
+  const [subTab, setSubTab] = useState("PATIENT");
+  const[status, setStatus] = useState('not_attended');
+  console.log(asyncState)
+
+  useEffect(() => {
+    if(status && at(asyncState, 'token') ) {
+      if(!at(executeDataResponse, 'FETCH_PATIENTS.isInitiated')) {
+        dispatch(executeData({
+          type: 'FETCH_PATIENTS',
+          token: at(asyncState, 'token'),
+          method: 'GET',
+          req: {
+            status: status
+          }
+        }))
+      }
+    }
+  })
+
+
+
+
+
+
+  Promise.resolve(device).then(deviceName => {
+    let devices = Device.DeviceType;
+    if (deviceName in devices) {
+      if (devices[deviceName] === "DESKTOP") {
+        setDesktop(true);
+      }
+    }
+  });
+
+
+
+  let saveAsync = useSelector(state => {
+    return state.AsyncStorageReducer;
+  });
+  let executeDataResponse = useSelector(state => {
+    return state.ExecuteData;
+  });
+  Promise.resolve(saveAsync).then(value => {
+    setAsyncState(value);
+  });
+
+
+ 
+
+
+
+
+
+
+
+
+
   return (
     <View style={styles.root}>
       <View style={styles.container}>
@@ -366,10 +422,10 @@ const DashboardScreen = ({ props, navigation }) => {
                     style={{
                       fontSize: 16,
                       fontWeight: "bold",
-                      color: theme.text
+                      color: theme.text 
                     }}
                   >
-                    Akmar Nafi
+                    {(at(asyncState, 'metaData.name'))? at(asyncState, 'metaData.name'): 'Unknown'}
                   </Text>
                   <Text
                     style={{
@@ -378,7 +434,7 @@ const DashboardScreen = ({ props, navigation }) => {
                       color: theme.paragraph
                     }}
                   >
-                    Doctor
+                     {(at(asyncState, 'metaData.ROLE'))? at(asyncState, 'metaData.ROLE').replace('_', " "): 'Unknown'}
                   </Text>
                 </View>
               </View>

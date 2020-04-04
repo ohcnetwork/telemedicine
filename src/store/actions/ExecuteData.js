@@ -24,7 +24,9 @@ let executeDataConfig = {
   DISTRICT_LIST: {url : "https://api.care.coronasafe.in/api/v1/state/1/districts/"},
   LOCAL_BODY_LIST: {url: "https://api.care.coronasafe.in/api/v1/local_body/"},
   RISK_RESULT_DATA: {url: "https://volunteer.coronasafe.network/api/reports"},
-  REQUEST_CALL_USER: { url: "https://tele.coronasafe.in/api/user/schedule"}
+  REQUEST_CALL_USER: { url: "https://tele.coronasafe.in/api/user/schedule"},
+  EMAIL_LOGIN: {url : "https://tele.coronasafe.in/api/authorize/login"},
+  FETCH_PATIENTS: {url: "https://tele.coronasafe.in/api/doctors/requests/fetch"}
 };
 
 export const executeData =  payload => {
@@ -59,12 +61,21 @@ export const executeData =  payload => {
       })
       .then( response => {
         Promise.resolve(response.json()).then((value) => {
+          if(value.data) {
             dispatch(
-                executeDataSuccess({
-                  key: payload.key,
-                  data: value.data
-                })
-              );
+              executeDataSuccess({
+                key: payload.key,
+                data: value.data
+              })
+            );
+          } else {
+            dispatch(
+              executeDataSuccess({
+                key: payload.key,
+                data: value
+              })
+            );
+          }
             })
         })
         .catch(error => {

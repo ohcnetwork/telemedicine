@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Text,
-  CheckBox,
+  CheckBox
 } from "react-native";
 import useTheme from "../constants/theme";
 import at from "v-at";
@@ -226,7 +226,7 @@ const AuthScreen = ({ navigation, props }) => {
             }
           }
         } else {
-          setOTPError('Invalid OTP')
+          setOTPError("Invalid OTP");
         }
       }
     } else if (view === "DISTRICT") {
@@ -251,26 +251,50 @@ const AuthScreen = ({ navigation, props }) => {
           }
         }
       }
-    }
-    else if (view === "CHRONIC_DISEASE") {
+    } else if (view === "EMAIL") {
+
+      if (at(executeDataResponse, "EMAIL_LOGIN.isDone")) {
+        setLoader(false);
+        if ((!asyncState, "token")) {
+          if (at(executeDataResponse, "EMAIL_LOGIN.data.token")) {
+            dispatch(
+              saveToStoreTokenAndData({
+                token: at(executeDataResponse, "EMAIL_LOGIN.data.token"),
+                metaData: {
+                  ...at(executeDataResponse, "EMAIL_LOGIN.data.userInfo.0"),
+                  ROLE: at(executeDataResponse, "EMAIL_LOGIN.data.ROLE")
+                }
+              })
+            );
+            navigation.navigate("dashboard");
+          }  else if(at(executeDataResponse, "EMAIL_LOGIN.data.error")) {
+            setEmailError(true);
+            dispatch(clearData({
+              type: 'EMAIL_LOGIN'
+            }))
+          }
+        }
+      }
+    } else if (view === "CHRONIC_DISEASE") {
       if (at(executeDataResponse, "UPDATE_USER_DATA.isDone")) {
-        
         if (loader) {
-          if(JSON.parse(at(executeDataResponse, "UPDATE_USER_DATA.data")).id) {
+          if (JSON.parse(at(executeDataResponse, "UPDATE_USER_DATA.data")).id) {
             dispatch(
               saveToStore({
-                metaData: { primary: true, id: JSON.parse(at(executeDataResponse, "UPDATE_USER_DATA.data")).id }
+                metaData: {
+                  primary: true,
+                  id: JSON.parse(
+                    at(executeDataResponse, "UPDATE_USER_DATA.data")
+                  ).id
+                }
               })
             );
           }
-         
-          if(at(asyncState, 'metaData.primary'))
-          {
 
+          if (at(asyncState, "metaData.primary")) {
             setLoader(false);
-            navigation.navigate('home');
+            navigation.navigate("home");
           }
-         
         } else {
           if (loader) {
             setLoader(false);
@@ -280,19 +304,21 @@ const AuthScreen = ({ navigation, props }) => {
     }
   });
 
-  const handleTokenInitialize =  () => {
-     dispatch(
+  const handleTokenInitialize = () => {
+    dispatch(
       saveToStoreToken({
         token: at(executeDataResponse, "SEND_OTP_CHECK.data.access_token")
       })
     );
   };
-  const handleUserInitialize =  () => {
-     dispatch(
+  const handleUserInitialize = () => {
+    dispatch(
       saveToStoreTokenAndData({
         metaData: {
           primary: true,
-        ...JSON.parse(at(executeDataResponse, "SEND_OTP_CHECK.data.userInfo")),
+          ...JSON.parse(
+            at(executeDataResponse, "SEND_OTP_CHECK.data.userInfo")
+          ),
           activeUser: at(asyncState, "metaData.fullname"),
           fullname: at(
             executeDataResponse,
@@ -317,24 +343,24 @@ const AuthScreen = ({ navigation, props }) => {
         }
         break;
       case "EMAIL":
-        let regEmail = new RegExp(
-          '^/^(([^<>()[].,;:s@"]+(.[^<>()[].,;:s@"]+)*)|(".+"))@(([^<>()[].,;:s@"]+.)+[^<>()[].,;:s@"]{2,})$/i/^(([^<>()[].,;:s@"]+(.[^<>()[].,;:s@"]+)*)|(".+"))@(([^<>()[].,;:s@"]+.)+[^<>()[].,;:s@"]{2,})$/i'
-        );
+        let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        console.log(re.test(email), email, password);
         if (email) {
-          if (!regEmail.test(email) || !password) {
+          if (!re.test(email) || !password) {
             setEmailError(i18n.t("enter_email_valid"));
             return;
           }
           dispatch(
             executeData({
               method: "POST",
-              type: "SEND_EMAIL_LOGIN",
-              req: {
+              type: "EMAIL_LOGIN",
+              req: JSON.stringify({
                 email: email,
                 password: password
-              }
+              })
             })
           );
+          setLoader(true);
           dispatch(saveToStore({ metaData: { email: email } }));
         } else {
           setEmailError(i18n.t("enter_email_valid"));
@@ -430,8 +456,12 @@ const AuthScreen = ({ navigation, props }) => {
               districtName = item.name;
             }
           });
-          dispatch(saveToStore({ metaData: { district: districtValue , districtName:  districtName} }));
-          
+          dispatch(
+            saveToStore({
+              metaData: { district: districtValue, districtName: districtName }
+            })
+          );
+
           dispatch(
             executeData({
               type: "LOCAL_BODY_LIST",
@@ -487,7 +517,9 @@ const AuthScreen = ({ navigation, props }) => {
         setView("AGE_QUESTION");
         break;
       case "AGE_QUESTION":
-        dispatch(saveToStore({ metaData: { number_of_aged_dependents: value } }));
+        dispatch(
+          saveToStore({ metaData: { number_of_aged_dependents: value } })
+        );
         setView("RELATIVE_CHRONIC_DISEASE");
         break;
       case "RELATIVE_CHRONIC_DISEASE":
@@ -511,41 +543,54 @@ const AuthScreen = ({ navigation, props }) => {
     if (data) {
       let dataExecute = {};
       dataExecute.name = data.metaData.fullname;
-      dataExecute.contact_with_confirmed_carrier = data.metaData.contact_with_confirmed_carrier;
-      dataExecute.contact_with_suspected_carrier = data.metaData.contact_with_suspected_carrier;
+      dataExecute.contact_with_confirmed_carrier =
+        data.metaData.contact_with_confirmed_carrier;
+      dataExecute.contact_with_suspected_carrier =
+        data.metaData.contact_with_suspected_carrier;
       dataExecute.past_travel = data.metaData.past_travel;
       dataExecute.has_SARI = false;
       dataExecute.age = data.metaData.age;
-      dataExecute.gender = (data.metaData.gender === 'Male') ? 1 : (data.metaData.gender === 'Female') ? 2 : 3;
+      dataExecute.gender =
+        data.metaData.gender === "Male"
+          ? 1
+          : data.metaData.gender === "Female"
+          ? 2
+          : 3;
       dataExecute.phone_number = data.metaData.phoneNumber;
-      dataExecute.contact_with_carrier = data.metaData.contact_with_confirmed_carrier;
+      dataExecute.contact_with_carrier =
+        data.metaData.contact_with_confirmed_carrier;
       dataExecute.local_body = data.metaData.local_body;
       dataExecute.district = data.metaData.district;
       dataExecute.no_of_people = data.metaData.no_of_people;
-      dataExecute.number_of_aged_dependents = data.metaData.number_of_aged_dependents ? 1 : 0;
-      dataExecute.number_of_chronic_diseased_dependents = data.metaData.number_of_chronic_diseased_dependents ? 1 : 0;
+      dataExecute.number_of_aged_dependents = data.metaData
+        .number_of_aged_dependents
+        ? 1
+        : 0;
+      dataExecute.number_of_chronic_diseased_dependents = data.metaData
+        .number_of_chronic_diseased_dependents
+        ? 1
+        : 0;
       dataExecute.state = 1;
       dataExecute.primary = true;
       dataExecute.medical_history = chronicDisease;
       let local_body_object = {};
       let district_object = {};
-      let state_object ={
-        name: 'Kerala'
-      }
+      let state_object = {
+        name: "Kerala"
+      };
       dataExecute.state_object = state_object;
 
-      locality.map((item) => {
-        if(item.id == dataExecute.local_body) {
+      locality.map(item => {
+        if (item.id == dataExecute.local_body) {
           local_body_object.name = item.name;
-          local_body_object.body_type= item.body_type;
+          local_body_object.body_type = item.body_type;
           local_body_object.localbody_code = item.localbody_code;
           local_body_object.district = item.district;
-
         }
       });
       dataExecute.local_body_object = local_body_object;
-      district.map((item) => {
-        if(item.id == dataExecute.district) {
+      district.map(item => {
+        if (item.id == dataExecute.district) {
           district_object.name = item.name;
           district_object.state = item.state;
         }
@@ -559,9 +604,14 @@ const AuthScreen = ({ navigation, props }) => {
           method: "POST"
         })
       );
-      dispatch(saveToStore({
-        metaData: { local_body_object: local_body_object, district_object: district_object  }
-      }))
+      dispatch(
+        saveToStore({
+          metaData: {
+            local_body_object: local_body_object,
+            district_object: district_object
+          }
+        })
+      );
       setLoader(true);
       // dispatch(
       //   saveToStore({
@@ -748,9 +798,13 @@ const AuthScreen = ({ navigation, props }) => {
                   selectedLocality(parseInt(value, 10));
                 }
               }}
-              items={!loader ? locality.map(item => {
-                return { label: item.name, value: item.id };
-              }): []}
+              items={
+                !loader
+                  ? locality.map(item => {
+                      return { label: item.name, value: item.id };
+                    })
+                  : []
+              }
             />
           </View>
           <Text style={styles.labelText2}>{i18n.t("pincode")}</Text>
@@ -891,9 +945,7 @@ const AuthScreen = ({ navigation, props }) => {
           <Text style={OTPError ? styles.labelTextError : styles.labelText2}>
             {i18n.t(OTPError ? "otp_error" : "otp_label")}
           </Text>
-          <Text style={styles.labelText2}>
-            {numberValue}
-          </Text>
+          <Text style={styles.labelText2}>{numberValue}</Text>
         </View>
         <View style={styles.textFieldContainer}>
           <OTPTextView
@@ -1025,6 +1077,12 @@ const AuthScreen = ({ navigation, props }) => {
   const handleEmailScreen = () => {
     return (
       <View style={styles.inputContainer}>
+        {emailError ? (
+          <Text style={styles.labelTextError}>
+            {"Invalid Email or Password! Try Again"}
+          </Text>
+        ) : null}
+
         <View style={styles.textContainer}>
           <Text style={styles.labelText}>{i18n.t("enter_email")}</Text>
         </View>
@@ -1116,7 +1174,7 @@ const AuthScreen = ({ navigation, props }) => {
             color={theme.success}
             textColor={theme.white}
             onPress={() => {
-              handleNavigation(true)
+              handleNavigation(true);
             }}
           />
           <ContainedButton
@@ -1124,7 +1182,7 @@ const AuthScreen = ({ navigation, props }) => {
             color={theme.button}
             textColor={theme.white}
             onPress={() => {
-              handleNavigation(false)
+              handleNavigation(false);
             }}
           />
         </View>
@@ -1146,7 +1204,7 @@ const AuthScreen = ({ navigation, props }) => {
             color={theme.success}
             textColor={theme.white}
             onPress={() => {
-              handleNavigation(true)
+              handleNavigation(true);
             }}
           />
           <ContainedButton
@@ -1154,7 +1212,7 @@ const AuthScreen = ({ navigation, props }) => {
             color={theme.button}
             textColor={theme.white}
             onPress={() => {
-              handleNavigation(false)
+              handleNavigation(false);
             }}
           />
         </View>
@@ -1182,7 +1240,7 @@ const AuthScreen = ({ navigation, props }) => {
             color={theme.button}
             textColor={theme.white}
             onPress={() => {
-              handleNavigation(false)
+              handleNavigation(false);
             }}
           />
         </View>
@@ -1202,7 +1260,7 @@ const AuthScreen = ({ navigation, props }) => {
             color={theme.success}
             textColor={theme.white}
             onPress={() => {
-              handleNavigation(true)
+              handleNavigation(true);
             }}
           />
           <ContainedButton
@@ -1210,7 +1268,7 @@ const AuthScreen = ({ navigation, props }) => {
             color={theme.button}
             textColor={theme.white}
             onPress={() => {
-              handleNavigation(false)
+              handleNavigation(false);
             }}
           />
         </View>
@@ -1228,20 +1286,24 @@ const AuthScreen = ({ navigation, props }) => {
           </Text>
         </View>
 
-        <View style={[styles.textContainer, {marginTop: 20}]}>
-          
+        <View style={[styles.textContainer, { marginTop: 20 }]}>
           <View
             style={[
               styles.buttonFieldContainer,
               { justifyContent: "flex-start" }
             ]}
           >
-            <CheckBox 
-             value={chronicDisease.Diabetes ? true : false}
-             onValueChange={() => setChronicDisease((value) => {
-               return { ...value, ...{Diabetes: value.Diabetes ? false : true}}
-             })}
-             />
+            <CheckBox
+              value={chronicDisease.Diabetes ? true : false}
+              onValueChange={() =>
+                setChronicDisease(value => {
+                  return {
+                    ...value,
+                    ...{ Diabetes: value.Diabetes ? false : true }
+                  };
+                })
+              }
+            />
             <Text style={[styles.labelText, { fontSize: 14, marginLeft: 10 }]}>
               {i18n.t("diabetes")}
             </Text>
@@ -1253,10 +1315,17 @@ const AuthScreen = ({ navigation, props }) => {
             ]}
           >
             <CheckBox
-              value={chronicDisease['Heart Disease'] ? true : false}
-              onValueChange={() => setChronicDisease((value) => {
-                return { ...value, ...{"Heart Disease": value["Heart Disease"] ? false : true}}
-              })}
+              value={chronicDisease["Heart Disease"] ? true : false}
+              onValueChange={() =>
+                setChronicDisease(value => {
+                  return {
+                    ...value,
+                    ...{
+                      "Heart Disease": value["Heart Disease"] ? false : true
+                    }
+                  };
+                })
+              }
             />
             <Text style={[styles.labelText, { fontSize: 14, marginLeft: 10 }]}>
               {i18n.t("heart")}
@@ -1268,11 +1337,16 @@ const AuthScreen = ({ navigation, props }) => {
               { justifyContent: "flex-start" }
             ]}
           >
-            <CheckBox 
-            value={chronicDisease.HyperTension ? true : false}
-            onValueChange={() => setChronicDisease((value) => {
-              return { ...value, ...{HyperTension: value.HyperTension ? false : true}}
-            })}
+            <CheckBox
+              value={chronicDisease.HyperTension ? true : false}
+              onValueChange={() =>
+                setChronicDisease(value => {
+                  return {
+                    ...value,
+                    ...{ HyperTension: value.HyperTension ? false : true }
+                  };
+                })
+              }
             />
             <Text style={[styles.labelText, { fontSize: 14, marginLeft: 10 }]}>
               {i18n.t("blood_pressure")}
@@ -1284,11 +1358,20 @@ const AuthScreen = ({ navigation, props }) => {
               { justifyContent: "flex-start" }
             ]}
           >
-            <CheckBox 
-             value={chronicDisease["Lung Diseases/Asthma"] ? true : false}
-             onValueChange={() => setChronicDisease((value) => {
-               return { ...value, ...{"Lung Diseases/Asthma": value["Lung Diseases/Asthma"] ? false : true}}
-             })}
+            <CheckBox
+              value={chronicDisease["Lung Diseases/Asthma"] ? true : false}
+              onValueChange={() =>
+                setChronicDisease(value => {
+                  return {
+                    ...value,
+                    ...{
+                      "Lung Diseases/Asthma": value["Lung Diseases/Asthma"]
+                        ? false
+                        : true
+                    }
+                  };
+                })
+              }
             />
             <Text style={[styles.labelText, { fontSize: 14, marginLeft: 10 }]}>
               {i18n.t("lung_disease")}
@@ -1300,28 +1383,40 @@ const AuthScreen = ({ navigation, props }) => {
               { justifyContent: "flex-start" }
             ]}
           >
-            <CheckBox 
-             value={chronicDisease.Cancer ? true : false}
-             onValueChange={() => setChronicDisease((value) => {
-               return { ...value, ...{Cancer: value.Cancer ? false : true}}
-             })}
+            <CheckBox
+              value={chronicDisease.Cancer ? true : false}
+              onValueChange={() =>
+                setChronicDisease(value => {
+                  return {
+                    ...value,
+                    ...{ Cancer: value.Cancer ? false : true }
+                  };
+                })
+              }
             />
             <Text style={[styles.labelText, { fontSize: 14, marginLeft: 10 }]}>
               {i18n.t("cancer")}
             </Text>
           </View>
-         
+
           <View
             style={[
               styles.buttonFieldContainer,
               { justifyContent: "flex-start" }
             ]}
           >
-            <CheckBox 
-            value={chronicDisease["Kidney Diseases"] ? true : false}
-            onValueChange={() => setChronicDisease((value) => {
-              return { ...value, ...{"Kidney Diseases": value["Kidney Diseases"] ? false : true}}
-            })}
+            <CheckBox
+              value={chronicDisease["Kidney Diseases"] ? true : false}
+              onValueChange={() =>
+                setChronicDisease(value => {
+                  return {
+                    ...value,
+                    ...{
+                      "Kidney Diseases": value["Kidney Diseases"] ? false : true
+                    }
+                  };
+                })
+              }
             />
             <Text style={[styles.labelText, { fontSize: 14, marginLeft: 10 }]}>
               {i18n.t("kidney")}
@@ -1333,11 +1428,18 @@ const AuthScreen = ({ navigation, props }) => {
               { justifyContent: "flex-start" }
             ]}
           >
-            <CheckBox 
-             value={chronicDisease["Taking Steroids"] ? true : false}
-             onValueChange={() => setChronicDisease((value) => {
-               return { ...value, ...{"Taking Steroids": value["Taking Steroids"] ? false : true}}
-             })}
+            <CheckBox
+              value={chronicDisease["Taking Steroids"] ? true : false}
+              onValueChange={() =>
+                setChronicDisease(value => {
+                  return {
+                    ...value,
+                    ...{
+                      "Taking Steroids": value["Taking Steroids"] ? false : true
+                    }
+                  };
+                })
+              }
             />
             <Text style={[styles.labelText, { fontSize: 14, marginLeft: 10 }]}>
               {i18n.t("steroids")}
@@ -1349,17 +1451,18 @@ const AuthScreen = ({ navigation, props }) => {
               { justifyContent: "flex-start" }
             ]}
           >
-            <CheckBox 
-             value={chronicDisease.NO ? true : false}
-             onValueChange={() => setChronicDisease((value) => {
-               return { ...value, ...{NO: value.NO ? false : true}}
-             })}
+            <CheckBox
+              value={chronicDisease.NO ? true : false}
+              onValueChange={() =>
+                setChronicDisease(value => {
+                  return { ...value, ...{ NO: value.NO ? false : true } };
+                })
+              }
             />
             <Text style={[styles.labelText, { fontSize: 14, marginLeft: 10 }]}>
               {i18n.t("none")}
             </Text>
           </View>
-          
         </View>
         <TouchableOpacity onPress={handleNavigation}>
           <AntDesign name="rightcircle" color={theme.button} size={50} />
@@ -1393,7 +1496,7 @@ const AuthScreen = ({ navigation, props }) => {
             width: width,
             marginLeft: width * 0.1,
             height: height * 0.15,
-            marginTop: 40,
+            marginTop: 20,
             display: "flex",
             flexDirection: "row",
             justifyContent: "flex-start",
