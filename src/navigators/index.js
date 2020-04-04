@@ -1,5 +1,8 @@
+import React from 'react';
 import { createAppContainer, createSwitchNavigator } from "react-navigation";
-import { Dimensions } from 'react-native';
+import { Dimensions, View } from 'react-native';
+import { clearStore } from "../store/actions/SaveAsync";
+import { useDispatch } from 'react-redux';
 import { createStackNavigator } from "react-navigation-stack";
 import { createDrawerNavigator } from 'react-navigation-drawer';
 import RiskScreen from "../containers/RiskCalculatorScreen";
@@ -12,8 +15,13 @@ import ChooseIndexUser from '../containers/chooseIndexUser';
 import ResultScreen from "../containers/ResultScreen";
 import DashBoardScreen from "../containers/DashboardScreen";
 // import {AntDesign} from '@expo/vector-icons';
+import { AsyncStorage } from "react-native";
 
-
+async function handleSignOut () {
+  const dispatch = useDispatch();
+  dispatch(clearStore());
+  window.location.reload()
+}
 
 
 const HomeNavigator = createStackNavigator({
@@ -68,7 +76,13 @@ const chooseUserNavigator = createStackNavigator({
 })
 const MyDrawerNavigator = createDrawerNavigator({
   Home: HomeNavigator,
-  'Change User': chooseUserNavigator
+  'Change User': chooseUserNavigator,
+  'Sign Out': () => {
+    handleSignOut();
+    return(
+      <View></View>
+    )
+  }
   
 }, {
   contentComponent: Drawer,  

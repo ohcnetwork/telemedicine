@@ -2,7 +2,8 @@ import {
   SAVE_DATA_ASYNC,
   SAVE_DATA_ASYNC_TOKEN,
   SAVE_DATA_ASYNC_LANGUAGE,
-  SAVE_DATA_ASYNC_TOKEN_DATA
+  SAVE_DATA_ASYNC_TOKEN_DATA,
+  CLEAR_DATA_ASYNC
 } from "../actionType";
 import { AsyncStorage } from "react-native";
 
@@ -52,6 +53,11 @@ const reducer = async (state, action) => {
     case SAVE_DATA_ASYNC_TOKEN_DATA: {
       let updatedState = await saveToStoreTokenAndData(state, action);
       AsyncStorage.setItem("@storage", JSON.stringify(updatedState));
+      return updatedState;
+    }
+    case CLEAR_DATA_ASYNC: {
+      let updatedState = {metaData: null, token: null};
+      AsyncStorage.setItem("@storage", JSON.stringify({metaData: null, token: null}));
       return updatedState;
     }
     default:

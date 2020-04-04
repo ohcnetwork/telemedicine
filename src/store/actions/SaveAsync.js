@@ -3,7 +3,8 @@ import {
   SAVE_DATA_ASYNC,
   SAVE_DATA_ASYNC_TOKEN,
   SAVE_DATA_ASYNC_LANGUAGE,
-  SAVE_DATA_ASYNC_TOKEN_DATA
+  SAVE_DATA_ASYNC_TOKEN_DATA,
+  CLEAR_DATA_ASYNC
 } from '../actionType';
 
 
@@ -13,6 +14,11 @@ export const saveToStore = (payload) => {
         dispatch(dispatchSaveToStore({
             metaData: payload.metaData,
         }))
+    }
+}
+export const clearStore = (payload) => {
+    return dispatch => {
+        dispatch(dispatchClearStore())
     }
 }
 export const saveToStoreToken = (payload) => {
@@ -62,4 +68,10 @@ const dispatchSaveToStoreLanguage = (data) => {
         data
     };
 };
+
+const dispatchClearStore= () => {
+    return {
+        type: CLEAR_DATA_ASYNC
+    }
+}
 
