@@ -11,6 +11,7 @@
     "@react-native-community/masked-view": "0.1.5",
     "expo": "~36.0.0",
     "expo-calendar": "~8.0.0",
+    "expo-cli": "^3.17.11",
     "expo-device": "~2.0.0",
     "expo-localization": "~8.0.0",
     "expo-location": "~8.0.0",
