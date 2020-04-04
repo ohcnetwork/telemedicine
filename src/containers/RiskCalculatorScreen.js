@@ -99,7 +99,7 @@ const RiskScreen = ({ props, navigation }) => {
       position: "relative",
       zIndex: 3,
       width: width * 0.8,
-      marginTop: 60,
+      marginTop: 40,
       display: "flex",
       flexDirection: "row",
       alignItems: "flex-start",
@@ -147,7 +147,7 @@ const RiskScreen = ({ props, navigation }) => {
       justifyContent: "center",
       display: "flex",
       flexDirection: "column",
-      marginTop: 100
+      marginTop: 80
     },
     textIndex: {
       fontSize: 10,
