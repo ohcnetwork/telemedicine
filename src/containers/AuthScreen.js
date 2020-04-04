@@ -54,7 +54,6 @@ const AuthScreen = ({ navigation, props }) => {
   Promise.resolve(device).then(deviceName => {
     let devices = Device.DeviceType;
     if (deviceName in devices) {
-      console.log(devices[deviceName]);
       if (devices[deviceName] === "DESKTOP") {
         setDesktop(true);
         setView("EMAIL");
@@ -277,7 +276,6 @@ const AuthScreen = ({ navigation, props }) => {
       }
     }
   });
-  console.log(executeDataResponse);
 
   const handleTokenInitialize =  () => {
      dispatch(
@@ -550,7 +548,6 @@ const AuthScreen = ({ navigation, props }) => {
         }
       });
       dataExecute.district_object = district_object;
-      console.log(dataExecute)
       dispatch(
         executeData({
           req: JSON.stringify(dataExecute),

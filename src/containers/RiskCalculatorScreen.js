@@ -40,7 +40,6 @@ const RiskScreen = ({ props, navigation }) => {
   Promise.resolve(saveAsync).then(value => {
     setAsyncState(value);
   });
-  console.log(executeDataResponse);
 
   useEffect(() => {
     if (language) {
@@ -180,7 +179,6 @@ const RiskScreen = ({ props, navigation }) => {
   const handleAnswerChoose = value => {
     let answer = answers;
     let totalValue = total;
-    console.log(Object.keys(questions).length > activeQuestionCount)
 
     switch (value) {
       case 0:

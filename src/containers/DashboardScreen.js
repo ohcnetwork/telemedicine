@@ -30,7 +30,6 @@ const DashboardScreen = ({ props, navigation }) => {
   Promise.resolve(device).then(deviceName => {
     let devices = Device.DeviceType;
     if (deviceName in devices) {
-      console.log(devices[deviceName]);
       if (devices[deviceName] === "DESKTOP") {
         setDesktop(true);
       }

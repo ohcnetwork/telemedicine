@@ -35,7 +35,6 @@ const ResultScreen = ({ props, navigation }) => {
   Promise.resolve(saveAsync).then(value => {
     setAsyncState(value);
   });
-  console.log("hereeeee");
   let data = navigation.getParam("data", {});
 
   const [report, setReport] = useState(null);
@@ -45,12 +44,12 @@ const ResultScreen = ({ props, navigation }) => {
       dispatch(
         executeData({
           type: "RISK_RESULT_DATA",
-          method: "GET"
+          method: "GET",
+          cookie: true
         })
       );
     }
     if (at(executeDataResponse, "RISK_RESULT_DATA.isDone")) {
-      console.log("whdkhdkawhjdkawdkhalsdh");
 
       if (!report) {
         let district = at(asyncState, 'metaData.district_object.name');
@@ -61,9 +60,7 @@ const ResultScreen = ({ props, navigation }) => {
       }
     }
   });
-  console.log(report);
 
-  console.log(executeDataResponse);
 
   let width = Math.round(Dimensions.get("window").width);
   let height = Math.round(Dimensions.get("window").height);
