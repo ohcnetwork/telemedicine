@@ -1350,9 +1350,9 @@ const AuthScreen = ({ navigation, props }) => {
             ]}
           >
             <CheckBox 
-             value={chronicDisease.No ? true : false}
+             value={chronicDisease.NO ? true : false}
              onValueChange={() => setChronicDisease((value) => {
-               return { ...value, ...{No: value.No ? false : true}}
+               return { ...value, ...{NO: value.NO ? false : true}}
              })}
             />
             <Text style={[styles.labelText, { fontSize: 14, marginLeft: 10 }]}>
