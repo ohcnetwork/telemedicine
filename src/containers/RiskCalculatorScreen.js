@@ -271,6 +271,7 @@ const RiskScreen = ({ props, navigation }) => {
     if(activeQuestionCount > 1) 
     {
       setActiveQuestionCount(activeQuestionCount - 1);
+      setAnswerState(false);
       setActiveQuestion(
         at(
           executeDataResponse,
