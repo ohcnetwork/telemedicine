@@ -124,7 +124,7 @@ const RiskScreen = ({ props, navigation }) => {
       zIndex: 2
     },
     cardContainer: {
-      alignItems: "space-around",
+      alignItems: "center",
       width: width * 0.8,
       justifyContent: "flex-start",
       display: "flex",
@@ -158,7 +158,8 @@ const RiskScreen = ({ props, navigation }) => {
       alignItems: "center",
       width: width * 0.8,
       display: "flex",
-      zIndex: 10
+      zIndex: 10,
+      marginTop: 30
     },
     question: {
       zIndex: 10,
@@ -166,7 +167,7 @@ const RiskScreen = ({ props, navigation }) => {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      justifyContent: "space-evenly"
+      justifyContent: "flex-start"
     },
     questionText: {
       textAlign: "center",
