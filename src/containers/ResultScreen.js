@@ -270,6 +270,11 @@ const ResultScreen = ({ props, navigation }) => {
         </View>
 
         <ScrollView style={{ marginTop: 10 }}>
+          <Text style={{
+            color: theme.text,
+            fontSize: 14,
+            fontWeight: '600'
+          }}>Status: {at(asyncState, 'metaData.district_object.name')}</Text>
           <View style={styles.reportCard}>
             <View style={styles.iconContainer}>
               <FontAwesome
