@@ -27,7 +27,7 @@ const RiskScreen = ({ props, navigation }) => {
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [answers, setAnswers] = useState({});
   const [activeQuestionCount, setActiveQuestionCount] = useState(1);
-  const [total, setTotal] = useState(0);
+  const [total, setTotal] = useState([]);
   const [user, setUser] = useState(null);
   const [answerState, setAnswerState] = useState(false);
 
@@ -78,7 +78,7 @@ const RiskScreen = ({ props, navigation }) => {
         setQuestions({});
         setActiveQuestionCount(1);
         setAnswers({});
-        setTotal(0);
+        setTotal([]);
       }
     }
   });
@@ -178,11 +178,10 @@ const RiskScreen = ({ props, navigation }) => {
 
   const handleAnswerChoose = value => {
     let answer = answers;
-    let totalValue = total;
+    let totalValue = [...total];
 
     switch (value) {
       case 0:
-        
         if (Object.keys(questions).length > activeQuestionCount) {
           setActiveQuestion(
             at(
@@ -196,7 +195,7 @@ const RiskScreen = ({ props, navigation }) => {
         }
         break;
       case 1:
-        totalValue = totalValue + at(activeQuestion, "mild");
+        totalValue.push(at(activeQuestion, "mild"));
         answer[activeQuestionCount] = at(activeQuestion, "mild");
         setTotal(totalValue);
         setAnswerState(false);
@@ -213,7 +212,7 @@ const RiskScreen = ({ props, navigation }) => {
         }
         break;
       case 2:
-        totalValue = totalValue + at(activeQuestion, "medium");
+        totalValue.push(at(activeQuestion, "medium"));
         answer[activeQuestionCount] = at(activeQuestion, "medium");
         setTotal(totalValue);
         setAnswerState(false);
@@ -230,7 +229,7 @@ const RiskScreen = ({ props, navigation }) => {
         }
         break;
       case 3:
-        totalValue = totalValue + at(activeQuestion, "high");
+        totalValue.push(at(activeQuestion, "high"));
         answer[activeQuestionCount] = at(activeQuestion, "high");
         setTotal(totalValue);
         setAnswerState(false);
@@ -252,6 +251,12 @@ const RiskScreen = ({ props, navigation }) => {
   };
 
   const handleSubmitAnswerDispatch = (totalValue, answer) => {
+    let actualTotal = 0;
+    console.log(totalValue);
+    totalValue.map(item => {
+      actualTotal += item;
+    });
+
     dispatch(
       executeData({
         type: "SEND_ANSWERS",
@@ -259,7 +264,7 @@ const RiskScreen = ({ props, navigation }) => {
         method: "POST",
         req: JSON.stringify({
           answers: answer,
-          score: totalValue === total ? total : totalValue,
+          score: actualTotal,
           id: at(asyncState, "metaData.id")
         })
       })
@@ -267,8 +272,10 @@ const RiskScreen = ({ props, navigation }) => {
   };
 
   const handleCardBackPress = () => {
-    if(activeQuestionCount > 1) 
-    {
+    if (activeQuestionCount > 1) {
+      let totalValue = [...total];
+      totalValue.pop();
+      setTotal(totalValue);
       setActiveQuestionCount(activeQuestionCount - 1);
       setAnswerState(false);
       setActiveQuestion(
@@ -278,16 +285,16 @@ const RiskScreen = ({ props, navigation }) => {
         )
       );
     }
-  }
+  };
 
   useEffect(() => {
-    if (activeQuestionCount  === Object.keys(questions).length) {
+    if (activeQuestionCount === Object.keys(questions).length) {
       if (at(executeDataResponse, "SEND_ANSWERS.isDone")) {
         let dataResponse = at(executeDataResponse, "SEND_ANSWERS.data");
         navigation.navigate("Result", { data: dataResponse });
         setActiveQuestionCount(1);
         setAnswers({});
-        setTotal(0);
+        setTotal([]);
         dispatch(
           clearData({
             type: "SEND_ANSWERS"
@@ -331,11 +338,26 @@ const RiskScreen = ({ props, navigation }) => {
               shadow={true}
               content={
                 <View style={styles.cardContainer}>
-                 <View style={[{alignItems: 'flex-start', display: 'flex', width: width * 0.8, marginVertical: 5}]}>
-                   {(activeQuestionCount > 1) ? <TouchableOpacity onPress={() => handleCardBackPress()}>
-                     <AntDesign name="arrowleft" size={18} color={theme.button} />
-                   </TouchableOpacity> : null}
-                   </View>
+                  <View
+                    style={[
+                      {
+                        alignItems: "flex-start",
+                        display: "flex",
+                        width: width * 0.8,
+                        marginVertical: 5
+                      }
+                    ]}
+                  >
+                    {activeQuestionCount > 1 ? (
+                      <TouchableOpacity onPress={() => handleCardBackPress()}>
+                        <AntDesign
+                          name="arrowleft"
+                          size={18}
+                          color={theme.button}
+                        />
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
                   <View style={styles.index}>
                     <AntDesign
                       style={{ marginRight: 5 }}

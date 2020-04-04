@@ -254,13 +254,16 @@ const AuthScreen = ({ navigation, props }) => {
     }
     else if (view === "CHRONIC_DISEASE") {
       if (at(executeDataResponse, "UPDATE_USER_DATA.isDone")) {
+        
         if (loader) {
-          setLocality(at(executeDataResponse, "UPDATE_USER_DATA.data.message"));
-          dispatch(
-            saveToStore({
-              metaData: { primary: true }
-            })
-          );
+          if(JSON.parse(at(executeDataResponse, "UPDATE_USER_DATA.data")).id) {
+            dispatch(
+              saveToStore({
+                metaData: { primary: true, id: JSON.parse(at(executeDataResponse, "UPDATE_USER_DATA.data")).id }
+              })
+            );
+          }
+         
           if(at(asyncState, 'metaData.primary'))
           {
 
