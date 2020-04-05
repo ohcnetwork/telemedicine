@@ -79,6 +79,7 @@ const DashboardScreen = ({ props, navigation }) => {
       display: "flex",
       flexDirection: "row",
       alignItems: "center",
+      width: Math.round(width * 0.75 - 100)
     },
     headerText: {
       fontSize: 22,
@@ -320,7 +321,7 @@ const DashboardScreen = ({ props, navigation }) => {
   const [desktop, setDesktop] = useState(false);
   const [tab, setTab] = useState("HOME");
   const [subTab, setSubTab] = useState("PATIENT");
-  const [status, setStatus] = useState("not_attended");
+  const [status, setStatus] = useState("All");
   const [patients, setPatients] = useState([]);
 
   const [page, setPage] = useState(1);
@@ -384,6 +385,7 @@ const DashboardScreen = ({ props, navigation }) => {
   ];
 
   const actionDataVolunteerMenu = [
+    {label: "ALL", value: "All"},
     { label: "NOT ATTENDED", value: "not_attended" },
     { label: "ATTENDED", value: "attending_by_volunteer" },
     { label: "FORWARDED TO DOCTOR", value: "forwarded_to_doctor" },
@@ -448,16 +450,16 @@ const DashboardScreen = ({ props, navigation }) => {
                   <Text style={styles.headerText}>{i18n.t("title")}</Text>
                 </View>
                 <View style={styles.tabBar}>
-                  <View style={styles.searchBar}>
+                  {/* <View style={styles.searchBar}>
                     <Text style={styles.searchText}>Search Phone Number</Text>
                     <AntDesign
                       name={"search1"}
                       size={12}
                       color={theme.paragraph}
                     />
-                  </View>
+                  </View> */}
 
-                  <View style={[styles.tabBlock]}>
+                  <View style={[styles.tabBlock, {marginHorizontal: 0, marginRight: 10}]}>
                     <Text
                       style={[
                         styles.tabText,

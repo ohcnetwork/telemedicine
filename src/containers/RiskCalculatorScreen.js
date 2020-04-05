@@ -196,7 +196,7 @@ const RiskScreen = ({ props, navigation }) => {
         break;
       case 1:
         totalValue.push(at(activeQuestion, "mild"));
-        answer[activeQuestionCount] = at(activeQuestion, "mild");
+        answer[activeQuestionCount] = "mild";
         setTotal(totalValue);
         setAnswerState(false);
         if (Object.keys(questions).length > activeQuestionCount) {
@@ -213,7 +213,7 @@ const RiskScreen = ({ props, navigation }) => {
         break;
       case 2:
         totalValue.push(at(activeQuestion, "medium"));
-        answer[activeQuestionCount] = at(activeQuestion, "medium");
+        answer[activeQuestionCount] = "medium";
         setTotal(totalValue);
         setAnswerState(false);
         if (Object.keys(questions).length > activeQuestionCount) {
@@ -230,7 +230,7 @@ const RiskScreen = ({ props, navigation }) => {
         break;
       case 3:
         totalValue.push(at(activeQuestion, "high"));
-        answer[activeQuestionCount] = at(activeQuestion, "high");
+        answer[activeQuestionCount] = "high";
         setTotal(totalValue);
         setAnswerState(false);
         if (Object.keys(questions).length > activeQuestionCount) {
