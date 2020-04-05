@@ -8,17 +8,33 @@ const initialState = {};
 
 const executeDataInitiate = (state, action) => {
   let updatedState = Object.assign({}, state[action.data.key]);
-  updatedState = {
-    isInitiated: true
-  };
+  if (action.data.page) {
+    updatedState[action.data.page] = {};
+    updatedState[action.data.page] = {
+      isInitiated: true
+    };
+  } else {
+    updatedState = {
+      isInitiated: true
+    };
+  }
+
   return { ...state, [action.data.key]: updatedState };
 };
 
 const executeDataSuccess = (state, action) => {
   let updatedState = Object.assign({}, state[action.data.key]);
-  updatedState.isInitiated = true;
-  updatedState.isDone = true;
-  updatedState.data = action.data.data;
+  if (action.data.data.page) {
+    updatedState[action.data.data.page] = {};
+    updatedState[action.data.data.page].isInitiated = true;
+    updatedState[action.data.data.page].isDone = true;
+    updatedState[action.data.data.page].data = action.data.data;
+  } else {
+    updatedState.isInitiated = true;
+    updatedState.isDone = true;
+    updatedState.data = action.data.data;
+  }
+
   return { ...state, [action.data.key]: updatedState };
 };
 

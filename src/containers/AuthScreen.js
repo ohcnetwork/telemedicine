@@ -319,10 +319,10 @@ const AuthScreen = ({ navigation, props }) => {
           ...JSON.parse(
             at(executeDataResponse, "SEND_OTP_CHECK.data.userInfo")
           ),
-          activeUser: at(asyncState, "metaData.fullname"),
-          fullname: at(
+          activeUser: at(asyncState, "metaData.name"),
+          name: at(
             executeDataResponse,
-            "SEND_OTP_CHECK.data.userInfo.fullname"
+            "SEND_OTP_CHECK.data.userInfo.name"
           )
         },
         token: at(executeDataResponse, "SEND_OTP_CHECK.data.access_token")
@@ -418,7 +418,7 @@ const AuthScreen = ({ navigation, props }) => {
         break;
       case "NAME":
         if (name) {
-          dispatch(saveToStore({ metaData: { fullname: name } }));
+          dispatch(saveToStore({ metaData: { name: name } }));
           setView("AGE");
         } else {
           setNameError(true);
@@ -542,7 +542,7 @@ const AuthScreen = ({ navigation, props }) => {
     let data = { ...asyncState };
     if (data) {
       let dataExecute = {};
-      dataExecute.name = data.metaData.fullname;
+      dataExecute.name = data.metaData.name;
       dataExecute.contact_with_confirmed_carrier =
         data.metaData.contact_with_confirmed_carrier;
       dataExecute.contact_with_suspected_carrier =

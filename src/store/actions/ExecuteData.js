@@ -26,7 +26,9 @@ let executeDataConfig = {
   RISK_RESULT_DATA: {url: "https://volunteer.coronasafe.network/api/reports"},
   REQUEST_CALL_USER: { url: "https://tele.coronasafe.in/api/user/schedule"},
   EMAIL_LOGIN: {url : "https://tele.coronasafe.in/api/authorize/login"},
-  FETCH_PATIENTS: {url: "https://tele.coronasafe.in/api/doctors/requests/fetch"}
+  FETCH_PATIENTS: {url: "https://tele.coronasafe.in/api/doctors/requests/fetch"},
+  GET_COUNT: {url : "https://tele.coronasafe.in/api/doctors/requests/count"},
+  UPDATE_STATE: {url: "https://tele.coronasafe.in/api/doctors/requests/update"}
 };
 
 export const executeData =  payload => {
@@ -50,7 +52,8 @@ export const executeData =  payload => {
   return dispatch => {
     dispatch(
       executeDataInitiate({
-        key: payload.key
+        key: payload.key,
+        page: (payload.req && payload.req.page) ? payload.req.page : false
       })
     );
     if (payload.method === "POST") {

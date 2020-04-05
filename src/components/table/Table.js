@@ -5,57 +5,22 @@ import moment from "moment";
 import {ContainedButton} from '../button/Button';
 
 const Table = props => {
+
   const header = [
     "patient",
-    "time",
+    "created_at",
     "priority",
-    "volunteer",
     "status",
     "actions"
   ];
 
-  const rows = [
-    {
-      patient: {name: "Abraham George", phone: '7012912325'},
-      priority: "high",
-      time: moment(),
-      volunteer: "Vinayak Nair",
-      status: "Not-Attended",
-      actions: "View",
-    },
-    {
-        patient: {name: "Anoop Jacob", phone: '7012599799'},
-        priority: "medium",
-        time: moment(),
-        volunteer: "Vinayak Nair",
-        status: "Not-Attended",
-        actions: "View"
-    },
-    {
-        patient: {name: "Gokul Krishnan", phone: '7012599799'},
-        priority: "medium",
-        time: moment(),
-        volunteer: "Vinayak Nair",
-        status: "Not-Attended",
-        actions: "View",
-    },
-    {
-        patient: {name: "Lakshmi K", phone: '7012599799'},
-        priority: "high",
-        time: moment(),
-        volunteer: "Vinayak Nair",
-        status: "Not-Attended",
-        actions: "View"
-    },
-    {
-        patient: {name: "Olin Thomas", phone: '7012599799'},
-        priority: "medium",
-        time: moment(),
-        volunteer: "Vinayak Nair",
-        status: "Not-Attended",
-        actions: "View"
-    }
-  ];
+  if(props.doctor)  {
+    header.splice(4, 0,'volunteer')
+  }
+
+  console.log(props.rows)
+
+ 
 
   let theme = useTheme();
   let width = Math.round(Dimensions.get("window").width);
@@ -72,7 +37,8 @@ const Table = props => {
       display: "flex",
       flexDirection: "row",
       alignItems: "flex-start",
-      justifyContent: "flex-start"
+      justifyContent: "flex-start",
+      padding: 5
     },
     rows: {
         display: 'flex',
@@ -85,6 +51,7 @@ const Table = props => {
       height: 60,
       borderBottomColor: theme.shadow,
       borderBottomWidth: 1,
+      padding: 5
     },
     headerBlock: {
       width: props.width ? Math.round((props.width - 60) / header.length) : 200,
@@ -143,10 +110,9 @@ const Table = props => {
     }
   });
 
-  const[active, setActive] = useState(null);
 
-  const handleRowPress = (id) => {
-     setActive(id);
+  const handleRowPress = (id, row) => {
+     props.handleRowView(id ,row)
   }
   return (
     <View style={styles.table}>
@@ -154,13 +120,13 @@ const Table = props => {
         {header.map((item, idx) => {
           return (
             <View key={idx} style={item === 'patient' ?[styles.headerBlock, {alignItems: 'flex-start'}] : [styles.headerBlock]}>
-              <Text style={styles.headerText}>{item}</Text>
+              <Text style={styles.headerText}>{(item === 'created_at')? 'Time' : item}</Text>
             </View>
           );
         })}
       </View>
-      {rows.map((row, idx) => {
-        return <TouchableOpacity onPress={() => handleRowPress(idx)} key={idx} style={[styles.rows, {backgroundColor: (active === idx) ? theme.dashboard: theme.accent}]}>
+      {props.rows.map((row, id) => {
+        return <TouchableOpacity onPress={() => handleRowPress(id, row)} key={id} style={[styles.rows, {backgroundColor: (props.active === id) ? theme.dashboard: theme.accent}]}>
             {header.map((item, idx) => {
                if(item === 'patient') {
                 return(
@@ -172,7 +138,7 @@ const Table = props => {
                     </View>
                     </View> )
                }
-               else if(item === 'time') {
+               else if(item === 'created_at') {
                    return(
                     <View key={idx} style={[styles.rowBlock]}>
                         <Text style={styles.commonText}>{moment(row[item]).format('MMMM Do YYYY, h:mm:ss a')}</Text>
@@ -180,7 +146,7 @@ const Table = props => {
                    )
                }
                else if(item === 'priority') {
-                   if(row[item] === 'high'){
+                   if(row[item] === 'HIGH'){
                     return(
                         <View key={idx} style={[styles.rowBlock]}>
                             {/* <View style={[styles.chip, {backgroundColor: theme.error}]}> */}
@@ -209,14 +175,14 @@ const Table = props => {
             else if(item === 'status') {
                 return(
                  <View key={idx} style={[styles.rowBlock]}>
-                     <Text style={styles.commonText}>{row[item]}</Text>
+                     <Text style={[styles.commonText, {textTransform: 'uppercase'}]}>{row[item].replace(/_/g, ' ')}</Text>
                      </View>
                 )
             }
             else if(item === 'actions') {
                 return(
                  <View key={idx} style={[styles.rowBlock]}>
-                     <ContainedButton text="View" width= {80} height ={30} fontSize={12} textColor={theme.white} />
+                     <ContainedButton onPress={() => handleRowPress(id, row)} text="View" width= {80} height ={30} fontSize={12} textColor={theme.white} />
                      </View>
                 )
             }
