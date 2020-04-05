@@ -9,7 +9,8 @@ import {
   Dimensions,
   Text,
   ScrollView,
-  ActivityIndicator
+  ActivityIndicator,
+  Linking,
 } from "react-native";
 import useTheme from "../constants/theme";
 import { DrawerActions } from "react-navigation-drawer";
@@ -20,8 +21,8 @@ import Table from "../components/table/Table";
 import { ContainedButton } from "../components/button/Button";
 import { executeData, clearData } from "../store/actions/ExecuteData";
 import { clearStore } from "../store/actions/SaveAsync";
-import Menu from '../components/menu/Menu';
-import AddNewPatient from './AddNewPatient';
+import Menu from "../components/menu/Menu";
+import AddNewPatient from "./AddNewPatient";
 async function getDevice() {
   let device = 0;
   device = await Device.getDeviceTypeAsync();
@@ -34,7 +35,6 @@ const DashboardScreen = ({ props, navigation }) => {
   let width = Math.round(Dimensions.get("window").width);
   let height = Math.round(Dimensions.get("window").height);
 
-  
   const pickerSelectStyles = StyleSheet.create({
     inputIOS: {
       width: width * 0.15,
@@ -80,7 +80,7 @@ const DashboardScreen = ({ props, navigation }) => {
       display: "flex",
       flexDirection: "row",
       alignItems: "center",
-      width: Math.round(width * 0.75 - 100)
+      width: Math.round(width * 0.75 - 100),
     },
     headerText: {
       fontSize: 22,
@@ -332,8 +332,8 @@ const DashboardScreen = ({ props, navigation }) => {
   const [actionValueVolunteer, setActionValueVolunteer] = useState(null);
   const [active, setActive] = useState(null);
   const [filterMenu, setFilterMenu] = useState(false);
-  const[logoutMenu , setLogoutMenu] = useState(false);
-const[sideNavRootView, setDidNavRootView] = useState('COUNT');
+  const [logoutMenu, setLogoutMenu] = useState(false);
+  const [sideNavRootView, setDidNavRootView] = useState("COUNT");
   useEffect(() => {
     if (status && at(asyncState, "token")) {
       if (!at(executeDataResponse, `FETCH_PATIENTS.${page}.isInitiated`)) {
@@ -378,7 +378,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
   });
 
   const handleRowView = (id, row) => {
-    setDidNavRootView('PATIENT');
+    setDidNavRootView("PATIENT");
     setActiveRow(row);
     setActive(id);
   };
@@ -391,18 +391,27 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
   ];
 
   const actionDataVolunteerMenu = [
-    {label: "ALL", value: "All"},
+    { label: "ALL", value: "All" },
     { label: "NOT ATTENDED", value: "not_attended" },
     { label: "ATTENDED", value: "attending_by_volunteer" },
     { label: "FORWARDED TO DOCTOR", value: "forwarded_to_doctor" },
     { label: "CLOSED CASES", value: "closed_by_volunteer" },
   ];
-  const profileMenu = [
-    { label: "LOGOUT", value: "logout" },
+  const profileMenu = [{ label: "LOGOUT", value: "logout" }];
+  var colorArray = [
+    "#FFF5E5",
+    "#FAFCE9",
+    "#F2F9EC",
+    "#FFFF99",
+    "#E5FFFA",
+    "#FFE5F0",
+    "#E5FEFF",
+    "#E6F7FF",
+    "#E5E5FF",
+    "#F2E5FF",
+    "#FAEAF8",
+    "#FEE7E8",
   ];
-  var colorArray = ['#FFF5E5', '#FAFCE9', '#F2F9EC', '#FFFF99', '#E5FFFA', 
-		  '#FFE5F0', '#E5FEFF', '#E6F7FF', '#E5E5FF', '#F2E5FF',
-		  '#FAEAF8', '#FEE7E8'];
 
   const placeholderAction = {
     label: "Select an Action",
@@ -411,21 +420,23 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
   };
 
   const handlePatientCreate = (data) => {
-    setDidNavRootView('COUNT');
+    setDidNavRootView("COUNT");
     setLoader(true);
-    dispatch(executeData({
-      type:'UPDATE_STATE',
-      method: 'GET',
-      token: at(asyncState, 'token'),
-      req: data
-    }));
+    dispatch(
+      executeData({
+        type: "UPDATE_STATE",
+        method: "GET",
+        token: at(asyncState, "token"),
+        req: data,
+      })
+    );
     dispatch(
       clearData({
         type: "FETCH_PATIENTS",
       })
     );
     setPatients([]);
-  }
+  };
 
   const handleStateAction = () => {
     let requestId = at(activeRow, "request_id");
@@ -452,22 +463,24 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
     setLogoutMenu(false);
     dispatch(clearStore());
     window.location.reload();
-  }
+  };
 
   const handleMenuPress = (item) => {
-    if(item) {
+    if (item) {
       setFilterMenu(false);
-      dispatch(clearData({
-        type: 'FETCH_PATIENTS'
-      }));
+      dispatch(
+        clearData({
+          type: "FETCH_PATIENTS",
+        })
+      );
       setPatients([]);
-      setStatus(item.value)
+      setStatus(item.value);
     }
-  }
+  };
 
   return (
     <View style={styles.root}>
-       {loader && (
+      {loader && (
         <ActivityIndicator
           size="large"
           style={{
@@ -482,12 +495,10 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
           color={theme.button}
         />
       )}
-   
+
       <View style={styles.container}>
-      
         {desktop ? (
           <View style={styles.desktopContainer}>
-          
             <View style={styles.mainContainer}>
               <View style={styles.topNav}>
                 <View>
@@ -574,19 +585,18 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                     </View> */}
                   </View>
                   <View style={styles.filters}>
-                 
-                    <TouchableOpacity onPress={() => setDidNavRootView('ADD_PATIENT')} style={styles.addNew}>
+                    <TouchableOpacity
+                      onPress={() => setDidNavRootView("ADD_PATIENT")}
+                      style={styles.addNew}
+                    >
                       <AntDesign name="plus" size={20} color={theme.accent} />
                     </TouchableOpacity>
-                     <TouchableOpacity onPress={() => setFilterMenu(!filterMenu)} style={styles.filterIcon}>
-                     <AntDesign
-                        name="filter"
-                        size={20}
-                        color={theme.button}
-                      />
-                      </TouchableOpacity>
-                      
-                      
+                    <TouchableOpacity
+                      onPress={() => setFilterMenu(!filterMenu)}
+                      style={styles.filterIcon}
+                    >
+                      <AntDesign name="filter" size={20} color={theme.button} />
+                    </TouchableOpacity>
                   </View>
                 </View>
                 <View style={styles.content}>
@@ -598,18 +608,28 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                     rows={patients}
                   />
                   {/* TableEnd */}
-                  {filterMenu ? <Menu
-                  onPress={(item) => handleMenuPress(item)}
-                  data={actionDataVolunteerMenu}/>: null}
+                  {filterMenu ? (
+                    <Menu
+                      onPress={(item) => handleMenuPress(item)}
+                      data={actionDataVolunteerMenu}
+                    />
+                  ) : null}
                 </View>
               </View>
             </View>
             <View style={styles.sideNav}>
-            {logoutMenu ? <Menu data={profileMenu} backgroundColor={theme.white} onPress={(item) => handleMenuProfile(item)} height={40} right={60}/> : null}
+              {logoutMenu ? (
+                <Menu
+                  data={profileMenu}
+                  backgroundColor={theme.white}
+                  onPress={(item) => handleMenuProfile(item)}
+                  height={40}
+                  right={60}
+                />
+              ) : null}
               <View style={styles.profileTab}>
-
                 <TouchableOpacity onPress={() => setLogoutMenu(!logoutMenu)}>
-                <EvilIcons name="user" size={50} color={theme.button} />
+                  <EvilIcons name="user" size={50} color={theme.button} />
                 </TouchableOpacity>
                 <View style={styles.textProfile}>
                   <Text
@@ -637,8 +657,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                 </View>
               </View>
               <ScrollView>
-
-                {(sideNavRootView === 'COUNT' )? (
+                {sideNavRootView === "COUNT" ? (
                   <View style={styles.sideNavContentHome}>
                     {countData
                       ? Object.keys(countData).map((key, idx) => {
@@ -648,9 +667,8 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                                 style={[
                                   styles.iconContainer,
                                   {
-                                    backgroundColor: colorArray[idx]
-                                  }
-
+                                    backgroundColor: colorArray[idx],
+                                  },
                                 ]}
                               >
                                 <AntDesign
@@ -677,9 +695,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                         })
                       : null}
                   </View>
-                ) : 
-                (sideNavRootView === 'PATIENT')?
-                (
+                ) : sideNavRootView === "PATIENT" ? (
                   <View style={styles.sideNavContentPatient}>
                     <View
                       style={{
@@ -728,13 +744,13 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                         <Text style={styles.textBold}>
                           {at(activeRow, "name")}
                         </Text>
-                        <Text style={[styles.text, {marginTop: 2}]}>
+                        <Text style={[styles.text, { marginTop: 2 }]}>
                           {at(activeRow, "phone_number")}
                         </Text>
-                        <Text style={[styles.text, {marginTop: 2}]}>
+                        <Text style={[styles.text, { marginTop: 2 }]}>
                           Age: {at(activeRow, "age")}
                         </Text>
-                        <Text style={[styles.text, {marginTop: 2}]}>
+                        <Text style={[styles.text, { marginTop: 2 }]}>
                           Gender:{" "}
                           {at(activeRow, "gender") == 1
                             ? "Male"
@@ -747,6 +763,22 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                         width={80}
                         textColor={theme.white}
                         color={theme.success}
+                        onPress={() => {
+                          Linking.openURL(
+                            `tel:${at(activeRow, "phone_number")}`
+                          );
+                          dispatch(
+                            executeData({
+                              method: "GET",
+                              type: "SCHEDULE_NEW_ENTRY",
+                              token: at(asyncState, "token"),
+                              req: {
+                                id: at(activeRow, "id"),
+                                parentId: at(activeRow, "phone_number"),
+                              },
+                            })
+                          );
+                        }}
                         text={"Call"}
                         prefix={true}
                         icon="phone"
@@ -763,17 +795,33 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                     {at(activeRow, "medical_history")
                       ? at(activeRow, "medical_history").map((item, idx) => {
                           return (
-                            <Text key={idx} style={styles.textBold}>{item.disease}</Text>
+                            <Text key={idx} style={styles.textBold}>
+                              {item.disease}
+                            </Text>
                           );
                         })
                       : null}
                     <Text style={styles.text}>Symptoms:</Text>
-                   {at(activeRow, 'symptoms') ?Object.keys(at(activeRow, 'symptoms')).map((item, idx) => {
-                     return(
-                      <Text key={idx} style={[styles.textBold, {textTransform: 'capitalize'}]}>{activeRow.symptoms[item] } {item}</Text>
-                     )
-                   }) : null}
-                    <Text style={[styles.text, { marginTop: 20, marginBottom: 1 }]}>
+                    {at(activeRow, "symptoms")
+                      ? Object.keys(at(activeRow, "symptoms")).map(
+                          (item, idx) => {
+                            return (
+                              <Text
+                                key={idx}
+                                style={[
+                                  styles.textBold,
+                                  { textTransform: "capitalize" },
+                                ]}
+                              >
+                                {activeRow.symptoms[item]} {item}
+                              </Text>
+                            );
+                          }
+                        )
+                      : null}
+                    <Text
+                      style={[styles.text, { marginTop: 20, marginBottom: 1 }]}
+                    >
                       Contact With Carrier:{" "}
                       {at(activeRow, "contact_with_confirmed_carrier")
                         ? "Yes"
@@ -846,46 +894,63 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                         mLeft={20}
                         textColor={theme.white}
                         onPress={() => {
-                          setActiveRow(null),setDidNavRootView('COUNT'); setActive(null);
+                          setActiveRow(null), setDidNavRootView("COUNT");
+                          setActive(null);
                         }}
                         color={theme.button}
                         text={"Cancel"}
                       />
                     </View>
                   </View>
-                ): 
-                (sideNavRootView === 'ADD_PATIENT') ?
-                <View style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  justifyContent: 'flex-start',
-                  padding: 10,
-                  marginTop: 20,
-                  width: width * 0.2
-                }}>
-                  <Text style={{color: theme.button, fontSize: 18, fontWeight: 'bold'}}>Add New Patient</Text>
-                <AddNewPatient handlePatientCreate={(data) => handlePatientCreate(data)} />
-                <View style={
-                 { width: width * 0.2,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }
-
-                }>
-                <ContainedButton text="Cancel"  width={80}
-                        textColor={theme.white} 
-                        onPress={() => setDidNavRootView("COUNT")} color={theme.button}  />
-                        </View>
-                </View>
-                :null
-                }
+                ) : sideNavRootView === "ADD_PATIENT" ? (
+                  <View
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      justifyContent: "flex-start",
+                      padding: 10,
+                      marginTop: 20,
+                      width: width * 0.2,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: theme.button,
+                        fontSize: 18,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Add New Patient
+                    </Text>
+                    <AddNewPatient
+                      handlePatientCreate={(data) => handlePatientCreate(data)}
+                    />
+                    <View
+                      style={{
+                        width: width * 0.2,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <ContainedButton
+                        text="Cancel"
+                        width={80}
+                        textColor={theme.white}
+                        onPress={() => setDidNavRootView("COUNT")}
+                        color={theme.button}
+                      />
+                    </View>
+                  </View>
+                ) : null}
               </ScrollView>
             </View>
           </View>
         ) : (
-          <Text>Oops! Not available in Mobile View! Please Try Using Desktop.</Text>
+          <Text>
+            Oops! Not available in Mobile View! Please Try Using Desktop.
+          </Text>
         )}
       </View>
     </View>
