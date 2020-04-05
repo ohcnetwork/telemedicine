@@ -334,6 +334,7 @@ const DashboardScreen = ({ props, navigation }) => {
   const [filterMenu, setFilterMenu] = useState(false);
   const [logoutMenu, setLogoutMenu] = useState(false);
   const [sideNavRootView, setDidNavRootView] = useState("COUNT");
+  const [revealPhone, setRevealPhone] = useState(false);
   useEffect(() => {
     if (status && at(asyncState, "token")) {
       if (!at(executeDataResponse, `FETCH_PATIENTS.${page}.isInitiated`)) {
@@ -744,9 +745,9 @@ const DashboardScreen = ({ props, navigation }) => {
                         <Text style={styles.textBold}>
                           {at(activeRow, "name")}
                         </Text>
-                        <Text style={[styles.text, { marginTop: 2 }]}>
+                        {revealPhone? <Text style={[styles.text, { marginTop: 2 }]}>
                           {at(activeRow, "phone_number")}
-                        </Text>
+                        </Text> : null}
                         <Text style={[styles.text, { marginTop: 2 }]}>
                           Age: {at(activeRow, "age")}
                         </Text>
@@ -764,6 +765,7 @@ const DashboardScreen = ({ props, navigation }) => {
                         textColor={theme.white}
                         color={theme.success}
                         onPress={() => {
+                          setRevealPhone(true);
                           Linking.openURL(
                             `tel:${at(activeRow, "phone_number")}`
                           );
