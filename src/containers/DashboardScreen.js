@@ -9,6 +9,7 @@ import {
   Dimensions,
   Text,
   ScrollView,
+  ActivityIndicator
 } from "react-native";
 import useTheme from "../constants/theme";
 import { DrawerActions } from "react-navigation-drawer";
@@ -323,6 +324,7 @@ const DashboardScreen = ({ props, navigation }) => {
   const [subTab, setSubTab] = useState("PATIENT");
   const [status, setStatus] = useState("All");
   const [patients, setPatients] = useState([]);
+  const [loader, setLoader] = useState(false);
 
   const [page, setPage] = useState(1);
   const [countData, setCountData] = useState(null);
@@ -346,6 +348,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
             },
           })
         );
+        setLoader(true);
       }
       if (!at(executeDataResponse, "GET_COUNT.isInitiated")) {
         dispatch(
@@ -355,10 +358,12 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
             token: at(asyncState, "token"),
           })
         );
+        setLoader(true);
       }
       if (at(executeDataResponse, "GET_COUNT.isDone")) {
         if (!countData) {
           setCountData(at(executeDataResponse, "GET_COUNT.data"));
+          setLoader(false);
         }
       }
       if (at(executeDataResponse, `FETCH_PATIENTS.${page}.isDone`)) {
@@ -366,6 +371,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
           setPatients(
             at(executeDataResponse, `FETCH_PATIENTS.${page}.data.entries`)
           );
+          setLoader(false);
         }
       }
     }
@@ -406,6 +412,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
 
   const handlePatientCreate = (data) => {
     setDidNavRootView('COUNT');
+    setLoader(true);
     dispatch(executeData({
       type:'UPDATE_STATE',
       method: 'GET',
@@ -422,6 +429,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
 
   const handleStateAction = () => {
     let requestId = at(activeRow, "request_id");
+    setLoader(true);
     dispatch(
       executeData({
         method: "GET",
@@ -459,6 +467,21 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
 
   return (
     <View style={styles.root}>
+       {loader && (
+        <ActivityIndicator
+          size="large"
+          style={{
+            position: "absolute",
+            zIndex: 20,
+            width: width,
+            height: height,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          animating={loader}
+          color={theme.button}
+        />
+      )}
    
       <View style={styles.container}>
       
@@ -862,13 +885,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
             </View>
           </View>
         ) : (
-          <TouchableOpacity
-            onPress={() => {
-              navigation.dispatch(DrawerActions.openDrawer());
-            }}
-          >
-            <AntDesign name="menu-unfold" size={22} color={theme.text} />
-          </TouchableOpacity>
+          <Text>Oops! Not available in Mobile View! Please Try Using Desktop.</Text>
         )}
       </View>
     </View>
