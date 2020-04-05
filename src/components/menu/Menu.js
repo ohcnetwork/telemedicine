@@ -10,7 +10,7 @@ const Menu = (props) => {
         <View style={{
             position: 'absolute',
             width: 230,
-            height: props.height? props.height : 200,
+            height: props.height? props.height : 250,
             backgroundColor: props.backgroundColor? props.backgroundColor: theme.dashboard,
             zIndex: 10,
             top: 0,
