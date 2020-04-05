@@ -5,12 +5,14 @@ import {
   TouchableOpacity,
   Text,
   Dimensions,
+  SafeAreaView,
+  ScrollView,
   Linking
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 import useTheme from "../constants/theme";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, FontAwesome } from "@expo/vector-icons";
 import Svg, { Circle, Defs, LinearGradient, Stop } from "react-native-svg";
 import { DrawerActions } from "react-navigation-drawer";
 import { executeData, clearData } from "../store/actions/ExecuteData";
@@ -36,18 +38,36 @@ const ResultScreen = ({ props, navigation }) => {
   console.log("hereeeee");
   let data = navigation.getParam("data", {});
 
+  const [report, setReport] = useState(null);
+
+  useEffect(() => {
+    if (!at(executeDataResponse, "RISK_RESULT_DATA.isInitiated")) {
+      dispatch(
+        executeData({
+          type: "RISK_RESULT_DATA",
+          method: "GET"
+        })
+      );
+    }
+    if (at(executeDataResponse, "RISK_RESULT_DATA.isDone")) {
+      console.log("whdkhdkawhjdkawdkhalsdh");
+
+      if (!report) {
+        let district = at(asyncState, 'metaData.district_object.name');
+
+        setReport(
+          at(executeDataResponse, `RISK_RESULT_DATA.data.kerala.${district}`)
+        );
+      }
+    }
+  });
+  console.log(report);
+
+  console.log(executeDataResponse);
+
   let width = Math.round(Dimensions.get("window").width);
   let height = Math.round(Dimensions.get("window").height);
-  const handleChooseUser = name => {
-    dispatch(
-      saveToStore({
-        metaData: {
-          activeUser: name
-        }
-      })
-    );
-    navigation.navigate("Home");
-  };
+  
   const styles = StyleSheet.create({
     root: {
       alignItems: "center",
@@ -85,7 +105,7 @@ const ResultScreen = ({ props, navigation }) => {
       position: "relative",
       zIndex: 10,
       marginTop: 20,
-      height: height * 0.8,
+      height: height * 0.85,
       display: "flex",
       flexDirection: "column",
       alignItems: "flex-start",
@@ -117,22 +137,90 @@ const ResultScreen = ({ props, navigation }) => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center"
+    },
+    resultCard: {
+      width: width * 0.9,
+      height: 180,
+      backgroundColor: theme.success,
+      borderRadius: 20,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "space-evenly",
+      padding: 20
+    },
+    resultTitleText: {
+      color: theme.white,
+      fontSize: 18,
+      fontWeight: "600"
+    },
+    resultCount: {
+      color: theme.white,
+      fontSize: 22,
+      fontWeight: "bold"
+    },
+    resultReportText: {
+      color: theme.white,
+      fontSize: 12,
+      fontWeight: "400"
+    },
+    disclaimer: {
+      color: theme.white,
+      fontSize: 8,
+      fontWeight: "300"
+    },
+    iconContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+      width: 50,
+      height: 50,
+      borderRadius: 10,
+      backgroundColor: "#c6f5ff"
+    },
+    reportCard: {
+      marginVertical: 10,
+      width: width * 0.9,
+      height: 100,
+      borderRadius: 25,
+      backgroundColor: theme.accentDashboard,
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: 40
+    },
+    reportCard1: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-end",
+      justifyContent: "flex-start"
     }
   });
 
-  const handleCreateUser = () => {
-    dispatch(
-      clearData({
-        type: "GET_ALL_USERS"
-      })
-    );
-    setData([]);
-    navigation.navigate("create");
+
+  const handleRequestCall = () => {
+    if(!at(executeDataResponse, 'REQUEST_CALL_USER.isInitiated')) {
+      dispatch(
+        executeData({
+          type: "REQUEST_CALL_USER",
+          method: 'GET',
+          token: at(asyncState, 'token'),
+          req: {
+            id: at(asyncState, 'metaData.id')
+          }
+        })
+      );
+    }
+  
   };
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+        <TouchableOpacity onPress={() => {navigation.navigate("Home");
+      dispatch(clearData({
+        type: 'REQUEST_CALL_USER'
+      }))
+      }}>
           <AntDesign name="arrowleft" size={22} color={theme.button} />
         </TouchableOpacity>
       </View>
@@ -148,52 +236,248 @@ const ResultScreen = ({ props, navigation }) => {
         </Svg>
       </View>
       <View style={styles.content}>
-
-        <View style ={{
-          width: width * 0.9,
-          height: 180,
-          backgroundColor: theme.success,
-          borderRadius: 20,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'space-evenly',
-          padding: 20
-        }}>
-          <Text style = {{
-            color: theme.white,
-            fontSize: 18,
-            fontWeight: '600'
-
-          }}>
-              Your Score
+        <View
+          style={[
+            styles.resultCard,
+            {
+              backgroundColor:
+                at(data, "priority") === "Low" ? theme.success : theme.error
+            }
+          ]}
+        >
+          <Text style={styles.resultTitleText}>Your Score</Text>
+          <Text style={styles.resultCount}>
+            {at(data, "score") ? at(data, "score") : 0}
           </Text>
-          <Text style = {{
-            color: theme.white,
-            fontSize: 22,
-            fontWeight: 'bold'
-
-          }}>
-              10
-          </Text>
-          <Text style = {{
-            color: theme.white,
-            fontSize: 12,
-            fontWeight: '400'
-
-          }}>
-              Your are having low risk score. Stay Home and Take Neccessary Precautions. If you develop any illness. Dont Panic Come Here and We will connect you to a Doctor
-          </Text>
-          <Text style = {{
-            color: theme.white,
-            fontSize: 8,
-            fontWeight: '300'
-
-          }}>
-            *Disclaimer: The risk score doesnt guarrante that you are safe! Stay Indoor and Stay Safe. Wash Hands. Practice Social Distancing
-          </Text>
-
+          {at(data, "priority") === "Low" ? (
+            <Text style={styles.resultReportText}>
+              Your are having low risk score. Stay Home and Take Neccessary
+              Precautions. If you develop any illness. Dont Panic Come Here and
+              We will connect you to a Doctor
+            </Text>
+          ) : (
+            <ContainedButton
+            onPress={() => handleRequestCall()}
+              width={width * 0.6}
+              text="Request For Medical Call"
+              textColor={theme.white}
+            />
+          )}
+          {!at(executeDataResponse, 'REQUEST_CALL_USER.data.message') ? <Text style={styles.disclaimer}>
+            *Disclaimer: The risk score doesnt guarrante that you are safe! Stay
+            Indoor and Stay Safe. Wash Hands. Practice Social Distancing
+          </Text> : <Text style={[styles.disclaimer, {fontSize: 12, fontWeight: 'bold'}]}>{at(executeDataResponse, 'REQUEST_CALL_USER.data.message')}</Text>}
         </View>
+
+        <ScrollView style={{ marginTop: 10 }}>
+          <Text style={{
+            color: theme.text,
+            fontSize: 14,
+            fontWeight: '600'
+          }}>Status: {at(asyncState, 'metaData.district_object.name')}</Text>
+          <View style={styles.reportCard}>
+            <View style={styles.iconContainer}>
+              <FontAwesome
+                name={"stethoscope"}
+                size={25}
+                color={theme.active}
+              />
+            </View>
+            <View style={styles.reportCard1}>
+              <Text
+                style={[
+                  styles.resultTitleText,
+                  { color: theme.text, fontWeight: "400" }
+                ]}
+              >
+                Under Observation
+              </Text>
+              <Text
+                style={[
+                  styles.resultCount,
+                  { color: theme.text, fontWeight: "bold" }
+                ]}
+              >
+                {at(report, "under_observation")
+                  ? at(report, "under_observation")
+                  : 0}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.reportCard}>
+            <View style={styles.iconContainer}>
+              <FontAwesome
+                name={"stethoscope"}
+                size={25}
+                color={theme.active}
+              />
+            </View>
+            <View style={styles.reportCard1}>
+              <Text
+                style={[
+                  styles.resultTitleText,
+                  { color: theme.text, fontWeight: "400" }
+                ]}
+              >
+                Under Home Isolation
+              </Text>
+              <Text
+                style={[
+                  styles.resultCount,
+                  { color: theme.text, fontWeight: "bold" }
+                ]}
+              >
+                {at(report, "under_home_isolation")
+                  ? at(report, "under_home_isolation")
+                  : 0}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.reportCard}>
+            <View style={styles.iconContainer}>
+              <FontAwesome
+                name={"stethoscope"}
+                size={25}
+                color={theme.active}
+              />
+            </View>
+            <View style={styles.reportCard1}>
+              <Text
+                style={[
+                  styles.resultTitleText,
+                  { color: theme.text, fontWeight: "400" }
+                ]}
+              >
+                Total Hospitalized
+              </Text>
+              <Text
+                style={[
+                  styles.resultCount,
+                  { color: theme.text, fontWeight: "bold" }
+                ]}
+              >
+                {at(report, "total_hospitalised")
+                  ? at(report, "total_hospitalised")
+                  : 0}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.reportCard}>
+            <View style={styles.iconContainer}>
+              <FontAwesome
+                name={"stethoscope"}
+                size={25}
+                color={theme.active}
+              />
+            </View>
+            <View style={styles.reportCard1}>
+              <Text
+                style={[
+                  styles.resultTitleText,
+                  { color: theme.text, fontWeight: "400" }
+                ]}
+              >
+                Hospitalised Today
+              </Text>
+              <Text
+                style={[
+                  styles.resultCount,
+                  { color: theme.text, fontWeight: "bold" }
+                ]}
+              >
+                {at(report, "hospitalised_today")
+                  ? at(report, "hospitalised_today")
+                  : 0}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.reportCard}>
+            <View style={styles.iconContainer}>
+              <FontAwesome
+                name={"stethoscope"}
+                size={25}
+                color={theme.active}
+              />
+            </View>
+            <View style={styles.reportCard1}>
+              <Text
+                style={[
+                  styles.resultTitleText,
+                  { color: theme.text, fontWeight: "400" }
+                ]}
+              >
+                Corona Positive
+              </Text>
+              <Text
+                style={[
+                  styles.resultCount,
+                  { color: theme.text, fontWeight: "bold" }
+                ]}
+              >
+                {at(report, "corona_positive")
+                  ? at(report, "corona_positive")
+                  : 0}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.reportCard}>
+            <View style={styles.iconContainer}>
+              <FontAwesome
+                name={"stethoscope"}
+                size={25}
+                color={theme.active}
+              />
+            </View>
+            <View style={styles.reportCard1}>
+              <Text
+                style={[
+                  styles.resultTitleText,
+                  { color: theme.text, fontWeight: "400" }
+                ]}
+              >
+                Discharged | Cured
+              </Text>
+              <Text
+                style={[
+                  styles.resultCount,
+                  { color: theme.text, fontWeight: "bold" }
+                ]}
+              >
+                {at(report, "cured_discharged")
+                  ? at(report, "cured_discharged")
+                  : 0}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.reportCard}>
+            <View style={styles.iconContainer}>
+              <FontAwesome
+                name={"stethoscope"}
+                size={25}
+                color={theme.active}
+              />
+            </View>
+            <View style={styles.reportCard1}>
+              <Text
+                style={[
+                  styles.resultTitleText,
+                  { color: theme.text, fontWeight: "400" }
+                ]}
+              >
+                Deaths
+              </Text>
+              <Text
+                style={[
+                  styles.resultCount,
+                  { color: theme.text, fontWeight: "bold" }
+                ]}
+              >
+                {at(report, "deaths") ? at(report, "deaths") : 0}
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
+
         {/* <Text style={styles.infoText}>
           Hey {at(asyncState, "metaData.fullname")}
         </Text>
@@ -212,7 +496,7 @@ const ResultScreen = ({ props, navigation }) => {
           </Text>
         ) : null} */}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

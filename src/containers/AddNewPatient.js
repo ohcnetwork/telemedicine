@@ -3,44 +3,25 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   StyleSheet,
   View,
-  AsyncStorage,
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
   Text,
   CheckBox,
-  Image
 } from "react-native";
 import useTheme from "../constants/theme";
 import at from "v-at";
 import TextInput from "../components/input/Input";
-import {
-  saveToStoreLanguage,
-  saveToStore,
-  saveToStoreToken,
-  saveToStoreTokenAndData,
-} from "../store/actions/SaveAsync";
-import { executeData, clearData } from "../store/actions/ExecuteData";
+
+import { executeData } from "../store/actions/ExecuteData";
 import { AntDesign } from "@expo/vector-icons";
 import RNPickerSelect from "react-native-picker-select";
-import OTPTextView from "react-native-otp-textinput";
-import { ContainedButton, OutlinedButton } from "../components/button/Button";
-import { useLanguage } from "../constants/language/LanguageHook";
+import { ContainedButton } from "../components/button/Button";
 import i18n from "i18n-js";
-import * as Device from "expo-device";
 
-// import DateTimePicker from "@react-native-community/datetimepicker";
-// import moment from "moment";
-async function getDevice() {
-  let device = 0;
-  device = await Device.getDeviceTypeAsync();
-  return device;
-}
-const AuthScreen = ({ navigation, props }) => {
+const AuthScreen = (props) => {
   let dispatch = useDispatch();
-  const [language, setNewLanguage] = useLanguage();
   const [asyncState, setAsyncState] = useState({});
-  const [desktop, setDesktop] = useState(false);
 
   let saveAsync = useSelector((state) => {
     return state.AsyncStorageReducer;
@@ -51,26 +32,17 @@ const AuthScreen = ({ navigation, props }) => {
   Promise.resolve(saveAsync).then((value) => {
     setAsyncState(value);
   });
-  const device = getDevice();
-  Promise.resolve(device).then((deviceName) => {
-    let devices = Device.DeviceType;
-    if (deviceName in devices) {
-      if (devices[deviceName] === "DESKTOP") {
-        setDesktop(true);
-        setView("EMAIL");
-      }
-    }
-  });
 
   let theme = useTheme();
-  let width = Math.round(Dimensions.get("window").width);
-  let height = Math.round(Dimensions.get("window").height);
+  let width = Math.round(Dimensions.get("window").width * 0.2);
+  let height = Math.round(Dimensions.get("window").height * 0.7);
   const styles = StyleSheet.create({
     root: {
-      backgroundColor: theme.background,
-      flex: 1,
+      backgroundColor: theme.accentDashboard,
       height: height,
       width: width,
+      flex: 1,
+      position: "relative",
     },
     inputContainer: {
       height: height,
@@ -80,23 +52,8 @@ const AuthScreen = ({ navigation, props }) => {
       justifyContent: "center",
       alignItems: "center",
     },
-    inputContainerEmail: {
-      height: height,
-      width: width * 0.5,
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    textContainerEmail: {
-      width: width * 0.4,
-      flexDirection: "column",
-      justifyContent: "flex-start",
-      alignItems: "flex-start",
-      marginBottom: 20,
-    },
     textContainer: {
-      width: width * 0.8,
+      width: width,
       flexDirection: "column",
       justifyContent: "flex-start",
       alignItems: "flex-start",
@@ -148,7 +105,7 @@ const AuthScreen = ({ navigation, props }) => {
       paddingBottom: 5,
     },
     buttonFieldContainer: {
-      width: width * 0.8,
+      width: width ,
       display: "flex",
       flexDirection: "row",
       alignItems: "center",
@@ -160,7 +117,7 @@ const AuthScreen = ({ navigation, props }) => {
       flexDirection: "column",
       alignItems: "flex-start",
       justifyContent: "flex-start",
-      width: width * 0.8,
+      width: width,
       marginBottom: 20,
     },
   });
@@ -189,29 +146,11 @@ const AuthScreen = ({ navigation, props }) => {
     },
   });
 
-  // const checkToken = async () => {
-  //   let storage = await AsyncStorage.getItem("@storage");
-
-  //   storage = JSON.parse(storage);
-  //   if (storage && storage.token && storage.metaData.primary) {
-  //     navigation.navigate("home");
-  //   }
-  // };
-  // useEffect(() => {
-  //   checkToken();
-  // });
-
-  const [view, setView] = useState("LANGUAGE");
-  const [languageValue, selectedLanguage] = useState("en");
+  const [view, setView] = useState("NAME");
   const [numberValue, setNumber] = useState(0);
-  const [email, setEmail] = useState(null);
-  const [password, setPassword] = useState(null);
   const [numberError, setNumberError] = useState(null);
-  const [OTP, setOTP] = useState(null);
-  const [OTPError, setOTPError] = useState(null);
   const [nameError, setNameError] = useState(false);
   const [ageError, setAgeError] = useState(false);
-  const [emailError, setEmailError] = useState(false);
   const [district, setDistrict] = useState([]);
   const [districtValue, selectedDistrict] = useState(0);
   const [genderError, setGenderError] = useState(false);
@@ -227,25 +166,14 @@ const AuthScreen = ({ navigation, props }) => {
   const [localityError, setLocalityError] = useState(false);
   const [locality, setLocality] = useState([]);
   const [localityValue, selectedLocality] = useState(0);
+  const [agedRelative, setAgedRelative] = useState(false);
+  const [contactCarrier, setContactCarrier] = useState(false);
+  const [contactSuspectedCarrier, setContactSuspectedCarrier] = useState(false);
+  const [chronicRelative, setChronicRelative] = useState(false);
+
 
   useEffect(() => {
-    if (view === "OTP") {
-      if (at(executeDataResponse, "SEND_OTP_CHECK.isDone")) {
-        if (at(executeDataResponse, "SEND_OTP_CHECK.data.access_token")) {
-          if (at(executeDataResponse, "SEND_OTP_CHECK.data.role") === "USER") {
-            if (at(executeDataResponse, "SEND_OTP_CHECK.data.userInfo")) {
-              handleUserInitialize();
-              navigation.navigate("home");
-            } else {
-              handleTokenInitialize();
-              setView("NAME");
-            }
-          }
-        } else {
-          setOTPError("Invalid OTP");
-        }
-      }
-    } else if (view === "DISTRICT") {
+    if (view === "DISTRICT") {
       if (at(executeDataResponse, "DISTRICT_LIST.isDone")) {
         if (!(district.length > 0)) {
           setDistrict(at(executeDataResponse, "DISTRICT_LIST.data"));
@@ -267,51 +195,23 @@ const AuthScreen = ({ navigation, props }) => {
           }
         }
       }
-    } else if (view === "EMAIL") {
-      if (at(executeDataResponse, "EMAIL_LOGIN.isDone")) {
-        setLoader(false);
-        if ((!asyncState, "token")) {
-          if (at(executeDataResponse, "EMAIL_LOGIN.data.token")) {
-            dispatch(
-              saveToStoreTokenAndData({
-                token: at(executeDataResponse, "EMAIL_LOGIN.data.token"),
-                metaData: {
-                  ...at(executeDataResponse, "EMAIL_LOGIN.data.userInfo.0"),
-                  ROLE: at(executeDataResponse, "EMAIL_LOGIN.data.ROLE"),
-                },
-              })
-            );
-            navigation.navigate("dashboard");
-          } else if (at(executeDataResponse, "EMAIL_LOGIN.data.error")) {
-            setEmailError(true);
-            dispatch(
-              clearData({
-                type: "EMAIL_LOGIN",
-              })
-            );
-          }
-        }
-      }
     } else if (view === "CHRONIC_DISEASE") {
       if (at(executeDataResponse, "UPDATE_USER_DATA.isDone")) {
         if (loader) {
-          if (JSON.parse(at(executeDataResponse, "UPDATE_USER_DATA.data")).id) {
-            dispatch(
-              saveToStore({
-                metaData: {
-                  primary: true,
-                  id: JSON.parse(
-                    at(executeDataResponse, "UPDATE_USER_DATA.data")
-                  ).id,
-                },
-              })
-            );
-          }
-
-          if (at(asyncState, "metaData.primary")) {
+         
             setLoader(false);
-            navigation.navigate("home");
-          }
+            if(at(executeDataResponse, 'UPDATE_USER_DATA.data')){
+                let dataResponse = at(executeDataResponse, 'UPDATE_USER_DATA.data');
+                if(!dataResponse.error) {
+                    dataResponse = JSON.parse(dataResponse);
+                    props.handlePatientCreate({
+                        id: dataResponse.id,
+                        parentId: dataResponse.phone_number
+                    })
+                }
+               
+            }
+         
         } else {
           if (loader) {
             setLoader(false);
@@ -321,126 +221,26 @@ const AuthScreen = ({ navigation, props }) => {
     }
   });
 
-  const handleTokenInitialize = () => {
-    dispatch(
-      saveToStoreToken({
-        token: at(executeDataResponse, "SEND_OTP_CHECK.data.access_token"),
-      })
-    );
-  };
-  const handleUserInitialize = () => {
-    dispatch(
-      saveToStoreTokenAndData({
-        metaData: {
-          primary: true,
-          ...JSON.parse(
-            at(executeDataResponse, "SEND_OTP_CHECK.data.userInfo")
-          ),
-          activeUser: at(asyncState, "metaData.name"),
-          name: at(executeDataResponse, "SEND_OTP_CHECK.data.userInfo.name"),
-        },
-        token: at(executeDataResponse, "SEND_OTP_CHECK.data.access_token"),
-      })
-    );
-  };
-
   const handleNavigation = (value) => {
     switch (view) {
-      case "LANGUAGE":
-        setNewLanguage({ language: languageValue });
-        i18n.locale = languageValue;
-        dispatch(saveToStoreLanguage({ language: languageValue }));
-        if (desktop) {
-          setView("EMAIL");
-        } else {
-          setView("NUMBER");
-        }
-        break;
-      case "EMAIL":
-        let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        console.log(re.test(email), email, password);
-        if (email) {
-          if (!re.test(email) || !password) {
-            setEmailError(i18n.t("enter_email_valid"));
-            return;
-          }
-          dispatch(
-            executeData({
-              method: "POST",
-              type: "EMAIL_LOGIN",
-              req: JSON.stringify({
-                email: email,
-                password: password,
-              }),
-            })
-          );
-          setLoader(true);
-          dispatch(saveToStore({ metaData: { email: email } }));
-        } else {
-          setEmailError(i18n.t("enter_email_valid"));
-        }
-
-        break;
       case "NUMBER":
-        let reg = new RegExp("^[0-9]{12}$");
         if (numberValue) {
-          let numberCheck = numberValue.slice(1);
-          let number = numberValue.slice(3);
-          if (!reg.test(numberCheck) || numberValue[0] !== "+") {
-            setNumberError(i18n.t("enter_number_valid"));
-            return;
-          }
-          dispatch(
-            executeData({
-              method: "GET",
-              type: "SEND_PHONE_NUMBER",
-              req: {
-                phone: number,
-              },
-            })
-          );
-          dispatch(saveToStore({ metaData: { phoneNumber: numberValue } }));
-
-          setView("OTP");
+          setView("AGE");
         } else {
           setNumberError("Please Enter a Valid Mobile Number");
         }
 
         break;
-      case "OTP":
-        if (OTP) {
-          let reg = new RegExp("^[0-9]{4}$");
-          if (!reg.test(OTP)) {
-            setOTPError("Please Enter  Valid OTP");
-            return;
-          }
-          dispatch(
-            executeData({
-              method: "GET",
-              type: "SEND_OTP_CHECK",
-              req: {
-                otp: OTP,
-                number: numberValue.slice(3),
-              },
-            })
-          );
-          // dispatch(saveToStore({ metaData: { phoneNumber: numberValue } }));
-        } else {
-          setOTPError("Please Enter Valid OTP");
-        }
 
-        break;
       case "NAME":
         if (name) {
-          dispatch(saveToStore({ metaData: { name: name } }));
-          setView("AGE");
+          setView("NUMBER");
         } else {
           setNameError(true);
         }
         break;
       case "AGE":
         if (age) {
-          dispatch(saveToStore({ metaData: { age: age } }));
           setView("GENDER");
         } else {
           setAgeError(true);
@@ -448,7 +248,6 @@ const AuthScreen = ({ navigation, props }) => {
         break;
       case "GENDER":
         if (gender) {
-          dispatch(saveToStore({ metaData: { gender: gender } }));
           dispatch(
             executeData({
               type: "DISTRICT_LIST",
@@ -470,11 +269,6 @@ const AuthScreen = ({ navigation, props }) => {
               districtName = item.name;
             }
           });
-          dispatch(
-            saveToStore({
-              metaData: { district: districtValue, districtName: districtName },
-            })
-          );
 
           dispatch(
             executeData({
@@ -497,51 +291,32 @@ const AuthScreen = ({ navigation, props }) => {
         break;
       case "ADDRESS":
         if (at(address, "postalCode")) {
-          dispatch(saveToStore({ metaData: { local_body: localityValue } }));
           setView("PEOPLE");
         } else {
           return;
         }
         break;
       case "PEOPLE":
-        if (people) {
-          dispatch(saveToStore({ metaData: { no_of_people: people } }));
-        }
         setView("COUNTRY");
         break;
       case "COUNTRY":
-        dispatch(saveToStore({ metaData: { past_travel: countryBoolean } }));
         setView("CARRIER");
         break;
       case "CARRIER":
-        dispatch(
-          saveToStore({
-            metaData: { contact_with_confirmed_carrier: value },
-          })
-        );
+        setContactCarrier(value);
         setView("CARRIER_SUSPECTED");
 
         break;
       case "CARRIER_SUSPECTED":
-        dispatch(
-          saveToStore({
-            metaData: { contact_with_suspected_carrier: value },
-          })
-        );
+        setContactSuspectedCarrier(value);
         setView("AGE_QUESTION");
         break;
       case "AGE_QUESTION":
-        dispatch(
-          saveToStore({ metaData: { number_of_aged_dependents: value } })
-        );
+        setAgedRelative(value);
         setView("RELATIVE_CHRONIC_DISEASE");
         break;
       case "RELATIVE_CHRONIC_DISEASE":
-        dispatch(
-          saveToStore({
-            metaData: { number_of_chronic_diseased_dependents: value },
-          })
-        );
+        setChronicRelative(value);
         setView("CHRONIC_DISEASE");
         break;
       case "CHRONIC_DISEASE":
@@ -553,35 +328,28 @@ const AuthScreen = ({ navigation, props }) => {
   };
 
   const handleRiskScreenNav = () => {
-    let data = { ...asyncState };
-    if (data) {
       let dataExecute = {};
-      dataExecute.name = data.metaData.name;
-      dataExecute.contact_with_confirmed_carrier =
-        data.metaData.contact_with_confirmed_carrier;
-      dataExecute.contact_with_suspected_carrier =
-        data.metaData.contact_with_suspected_carrier;
-      dataExecute.past_travel = data.metaData.past_travel;
+      dataExecute.name = name;
+      dataExecute.contact_with_confirmed_carrier = contactCarrier
+      dataExecute.contact_with_suspected_carrier = contactSuspectedCarrier
+      dataExecute.past_travel = countryBoolean
       dataExecute.has_SARI = false;
-      dataExecute.age = data.metaData.age;
+      dataExecute.age = age;
       dataExecute.gender =
-        data.metaData.gender === "Male"
+        gender === "Male"
           ? 1
-          : data.metaData.gender === "Female"
+          : gender === "Female"
           ? 2
           : 3;
-      dataExecute.phone_number = data.metaData.phoneNumber;
-      dataExecute.contact_with_carrier =
-        data.metaData.contact_with_confirmed_carrier;
-      dataExecute.local_body = data.metaData.local_body;
-      dataExecute.district = data.metaData.district;
-      dataExecute.no_of_people = data.metaData.no_of_people;
-      dataExecute.number_of_aged_dependents = data.metaData
-        .number_of_aged_dependents
+      dataExecute.phone_number = numberValue.slice(3);
+      dataExecute.contact_with_carrier = contactCarrier;
+      dataExecute.local_body = localityValue;
+      dataExecute.district = districtValue;
+      dataExecute.no_of_people = people;
+      dataExecute.number_of_aged_dependents = agedRelative
         ? 1
         : 0;
-      dataExecute.number_of_chronic_diseased_dependents = data.metaData
-        .number_of_chronic_diseased_dependents
+      dataExecute.number_of_chronic_diseased_dependents = chronicRelative
         ? 1
         : 0;
       dataExecute.state = 1;
@@ -614,42 +382,21 @@ const AuthScreen = ({ navigation, props }) => {
         executeData({
           req: JSON.stringify(dataExecute),
           type: "UPDATE_USER_DATA",
-          token: asyncState.token,
+          token: at(asyncState, 'token'),
           method: "POST",
         })
       );
-      dispatch(
-        saveToStore({
-          metaData: {
-            local_body_object: local_body_object,
-            district_object: district_object,
-          },
-        })
-      );
+      
       setLoader(true);
-      // dispatch(
-      //   saveToStore({
-      //     metaData: {
-      //       primary: true
-      //     }
-      //   })
-      // );
-    }
   };
 
   const handleBackPress = () => {
     switch (view) {
       case "NUMBER":
-        setView("LANGUAGE");
-        break;
-      case "OTP":
-        setView("NUMBER");
-        break;
-      case "NAME":
-        setView("NUMBER");
+        setView("NAME");
         break;
       case "AGE":
-        setView("NAME");
+        setView("NUMBER");
         break;
       case "GENDER":
         setView("AGE");
@@ -713,10 +460,12 @@ const AuthScreen = ({ navigation, props }) => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("enter_name")}</Text>
+          <Text style={styles.labelText}>{"Patients Name"}</Text>
         </View>
         <View style={styles.textFieldContainer}>
           <TextInput
+            width={width}
+            backgroundColor={theme.accentDashboard}
             borderColor={nameError ? theme.error : theme.button}
             onChange={(e) => {
               setNameError(false);
@@ -738,12 +487,13 @@ const AuthScreen = ({ navigation, props }) => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("travel_history")}</Text>
+          <Text style={styles.labelText}>{"Patient Travel History?"}</Text>
         </View>
 
         <View style={styles.buttonFieldContainer}>
           <ContainedButton
             text={i18n.t("yes")}
+            width={width * 0.4}
             color={theme.success}
             textColor={theme.white}
             onPress={() => {
@@ -754,6 +504,7 @@ const AuthScreen = ({ navigation, props }) => {
           <ContainedButton
             text={i18n.t("no")}
             color={theme.button}
+            width={width * 0.4}
             textColor={theme.white}
             onPress={() => {
               handleNavigation();
@@ -769,10 +520,14 @@ const AuthScreen = ({ navigation, props }) => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("people_live_with")}</Text>
+          <Text style={styles.labelText}>
+            {"No of People Patient Live With?"}
+          </Text>
         </View>
         <View style={styles.textFieldContainer}>
           <TextInput
+            width={width}
+            backgroundColor={theme.accentDashboard}
             onChange={(e) => {
               setPeople(e);
             }}
@@ -790,10 +545,10 @@ const AuthScreen = ({ navigation, props }) => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("enter_address")}</Text>
+          <Text style={styles.labelText}>{"Patients Address"}</Text>
         </View>
         <View style={styles.textFieldLocation}>
-          <Text style={styles.labelText2}>{i18n.t("locality")}</Text>
+          <Text style={styles.labelText2}>{"Locality"}</Text>
           <View
             style={{
               ...styles.selectTextFieldContainer,
@@ -823,6 +578,8 @@ const AuthScreen = ({ navigation, props }) => {
           </View>
           <Text style={styles.labelText2}>{i18n.t("pincode")}</Text>
           <TextInput
+           width={width * 0.8}
+           backgroundColor={theme.accentDashboard}
             borderColor={
               !at(address, "postalCode") ? theme.error : theme.button
             }
@@ -853,10 +610,12 @@ const AuthScreen = ({ navigation, props }) => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("enter_age")}</Text>
+          <Text style={styles.labelText}>{"Patients Age"}</Text>
         </View>
         <View style={styles.textFieldContainer}>
           <TextInput
+            width={width}
+            backgroundColor={theme.accentDashboard}
             borderColor={ageError ? theme.error : theme.button}
             onChange={(e) => {
               setAgeError(false);
@@ -880,7 +639,7 @@ const AuthScreen = ({ navigation, props }) => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("enter_gender")}</Text>
+          <Text style={styles.labelText}>{"Patients Gender"}</Text>
         </View>
         <View
           style={{
@@ -914,76 +673,6 @@ const AuthScreen = ({ navigation, props }) => {
     );
   };
 
-  //   const handleDateInput = () => {
-  //     return (
-  //       <View style={styles.inputContainer}>
-  //         <View style={styles.textContainer}>
-  //           <Text style={styles.labelText}>
-  //             Please Enter Your Date of Birth...
-  //           </Text>
-  //         </View>
-  //         <View style={styles.selectTextFieldContainer}>
-  //           <TouchableOpacity
-  //             onPress={() => setDateVisibile(true)}
-  //             style={styles.datePicker}
-  //           >
-  //             <AntDesign name="calendar" color={theme.button} size={30} />
-  //             <Text style={styles.labelText}>
-  //               {selectedDate ? selectedDate : "Please Select Date of Birth"}
-  //             </Text>
-  //           </TouchableOpacity>
-  //           {dateVisibile ? (
-  //             <DateTimePicker
-  //               //   timeZoneOffsetInMinutes={0}
-  //               value={date}
-  //               mode={"date"}
-  //               maximumDate={new Date(2016, 12, 31)}
-  //               minimumDate={new Date(1947, 7, 15)}
-  //               //   is24Hour={true}
-  //               display="default"
-  //               onChange={(event, date) => handleDateChange(event.type, date)}
-  //             />
-  //           ) : null}
-  //         </View>
-  //         <TouchableOpacity>
-  //           <AntDesign name="rightcircle" color={theme.button} size={50} />
-  //         </TouchableOpacity>
-  //       </View>
-  //     );
-  //   };
-  const handleOTPInput = () => {
-    return (
-      <View style={styles.inputContainer}>
-        <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("otp_header")}</Text>
-          <Text style={OTPError ? styles.labelTextError : styles.labelText2}>
-            {i18n.t(OTPError ? "otp_error" : "otp_label")}
-          </Text>
-          <Text style={styles.labelText2}>{numberValue}</Text>
-        </View>
-        <View style={styles.textFieldContainer}>
-          <OTPTextView
-            tintColor={OTPError ? theme.error : theme.active}
-            offTintColor={OTPError ? theme.error : theme.active}
-            textInputStyle={styles.OTPInput}
-            handleTextChange={(text) => {
-              setOTPError(null);
-              setOTP(text);
-            }}
-            inputCount={4}
-            keyboardType="numeric"
-          />
-        </View>
-        <TouchableOpacity onPress={handleNavigation}>
-          <AntDesign
-            name={OTPError ? "exclamationcircle" : "rightcircle"}
-            color={OTPError ? theme.error : theme.button}
-            size={50}
-          />
-        </TouchableOpacity>
-      </View>
-    );
-  };
   const placeholder = {
     label: "Select Language",
     value: null,
@@ -1000,12 +689,11 @@ const AuthScreen = ({ navigation, props }) => {
     value: null,
     color: theme.paragraph,
   };
-
   const handleNumberInput = () => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("enter_number")}</Text>
+          <Text style={styles.labelText}>{"Patients Mobile Number"}</Text>
 
           {numberError ? (
             <Text style={styles.labelTextError}>{numberError}</Text>
@@ -1016,11 +704,11 @@ const AuthScreen = ({ navigation, props }) => {
           )}
         </View>
         <View style={styles.textFieldContainer}>
-          <AntDesign name="mobile1" color={theme.button} size={30} />
-
           <TextInput
             autoCompleteType="tel"
             maxLength={13}
+            width={width}
+            backgroundColor={theme.accentDashboard}
             defaultValue="+91"
             onChange={(e) => {
               setNumber(e);
@@ -1040,161 +728,13 @@ const AuthScreen = ({ navigation, props }) => {
     );
   };
 
-  const handleLanguageInput = () => {
-    return (
-      <View style={styles.inputContainer}>
-        <View style={styles.textContainer}>
-          <Text style={styles.labelText}>
-            Please Select Your Preferred Language...
-          </Text>
-        </View>
-        <View style={styles.selectTextFieldContainer}>
-          <RNPickerSelect
-            style={pickerSelectStyles}
-            placeholder={placeholder}
-            value={languageValue}
-            onValueChange={(value) => {
-              selectedLanguage(value);
-            }}
-            items={[
-              { label: "മലയാളം", value: "ml" },
-              { label: "English", value: "en" },
-            ]}
-          />
-        </View>
-        <TouchableOpacity onPress={handleNavigation}>
-          <AntDesign name="rightcircle" color={theme.button} size={50} />
-        </TouchableOpacity>
-      </View>
-    );
-  };
-  const handleChooseScreen = () => {
-    return (
-      <View style={styles.inputContainer}>
-        <ContainedButton
-          mBottom={20}
-          onPress={() => setView("NUMBER")}
-          textColor={theme.white}
-          width={desktop ? width * 0.4 : width * 0.8}
-          text="Login with Phone Number"
-        />
-        <OutlinedButton
-          color={theme.background}
-          onPress={() => setView("EMAIL")}
-          textColor={theme.button}
-          width={desktop ? width * 0.4 : width * 0.8}
-          text="Login with Email"
-        />
-      </View>
-    );
-  };
-  const handleEmailScreen = () => {
-    return (
-      <View
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          width: width,
-          height: height,
-          alignItems: "center",
-          justifyContent: "space-evenly",
-        }}
-      >
-          <View
-        style={{
-          width: width * 0.5,
-          height: height,
-          backgroundColor: '#699bce',
-          display: 'flex',
-          flexDirection: "columnn",
-          alignItems: 'flex-start',
-          justifyContent: 'flex-start',
-          padding: 20
-        }}
-        >
-          <Text style={{
-            color: theme.white,
-            fontSize: 24,
-            fontWeight: 'bold',
-            marginTop: 60,
-            marginLeft: 50
-          }}>Suraksha</Text>
-          <View style={{
-            display: 'flex',
-            height: height * 0.82,
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            width: width * 0.5,
-          }}>
-<Image
-          resizeMode="center"
-
-        style={
-          {width: 500,
-          height: 500,
-        opacity: 1}
-        }
-        source={require('./login.png')}
-      />
-      </View>
-        </View>
-        <View style={[styles.inputContainerEmail, {backgroundColor: theme.white}]}>
-          {emailError ? (
-            <Text style={styles.labelTextError}>
-              {"Invalid Email or Password! Try Again"}
-            </Text>
-          ) : null}
-
-          <View style={styles.textContainerEmail}>
-            <Text style={styles.labelText}>{i18n.t("enter_email")}</Text>
-          </View>
-          <View style={[styles.textFieldContainer, { width: width * 0.4 , backgroundColor: theme.white}]}>
-            <TextInput
-             backgroundColor={theme.white}
-              autoCompleteType="email"
-              keyboardType="email-address"
-              borderColor={emailError ? theme.error : theme.button}
-              onChange={(e) => {
-                setEmailError(false);
-                setEmail(e);
-              }}
-            />
-          </View>
-          <View style={styles.textContainerEmail}>
-            <Text style={styles.labelText}>{i18n.t("enter_password")}</Text>
-          </View>
-          <View style={[styles.textFieldContainer, { width: width * 0.4 , backgroundColor: theme.white}]}>
-            <TextInput
-            backgroundColor={theme.white}
-              secureTextEntry={true}
-              textContentType="password"
-              autoCompleteType="password"
-              borderColor={emailError ? theme.error : theme.button}
-              onChange={(e) => {
-                setEmailError(false);
-                setPassword(e);
-              }}
-            />
-          </View>
-          <TouchableOpacity onPress={handleNavigation}>
-            <AntDesign
-              name={emailError ? "exclamationcircle" : "rightcircle"}
-              color={emailError ? theme.error : theme.button}
-              size={50}
-            />
-          </TouchableOpacity>
-        </View>
-      
-      </View>
-    );
-  };
+ 
 
   const handleDistrictInput = () => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("enter_district")}</Text>
+          <Text style={styles.labelText}>{"Patients District"}</Text>
         </View>
         <View
           style={{
@@ -1234,12 +774,15 @@ const AuthScreen = ({ navigation, props }) => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("contact_carrier")}</Text>
+          <Text style={styles.labelText}>
+            {"Did Patient Came To Contact With Carrier?"}
+          </Text>
         </View>
 
         <View style={styles.buttonFieldContainer}>
           <ContainedButton
             text={i18n.t("yes")}
+            width={width * 0.4}
             color={theme.success}
             textColor={theme.white}
             onPress={() => {
@@ -1248,6 +791,7 @@ const AuthScreen = ({ navigation, props }) => {
           />
           <ContainedButton
             text={i18n.t("no")}
+            width={width * 0.4}
             color={theme.button}
             textColor={theme.white}
             onPress={() => {
@@ -1263,13 +807,14 @@ const AuthScreen = ({ navigation, props }) => {
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
           <Text style={styles.labelText}>
-            {i18n.t("contact_carrier_suspected")}
+            {"Did Patient Came To Contact With Suspected Carrier?"}
           </Text>
         </View>
 
         <View style={styles.buttonFieldContainer}>
           <ContainedButton
             text={i18n.t("yes")}
+            width={width * 0.4}
             color={theme.success}
             textColor={theme.white}
             onPress={() => {
@@ -1278,6 +823,7 @@ const AuthScreen = ({ navigation, props }) => {
           />
           <ContainedButton
             text={i18n.t("no")}
+            width={width * 0.4}
             color={theme.button}
             textColor={theme.white}
             onPress={() => {
@@ -1292,12 +838,13 @@ const AuthScreen = ({ navigation, props }) => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("aged_question")}</Text>
+          <Text style={styles.labelText}>{"Aged Dependents of Patient?"}</Text>
         </View>
 
         <View style={styles.buttonFieldContainer}>
           <ContainedButton
             text={i18n.t("yes")}
+            width={width * 0.4}
             color={theme.success}
             textColor={theme.white}
             onPress={() => {
@@ -1306,6 +853,7 @@ const AuthScreen = ({ navigation, props }) => {
           />
           <ContainedButton
             text={i18n.t("no")}
+            width={width * 0.4}
             color={theme.button}
             textColor={theme.white}
             onPress={() => {
@@ -1320,12 +868,15 @@ const AuthScreen = ({ navigation, props }) => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("relative_chronic")}</Text>
+          <Text style={styles.labelText}>
+            {"Any Relatives with Chronic Disease"}
+          </Text>
         </View>
 
         <View style={styles.buttonFieldContainer}>
           <ContainedButton
             text={i18n.t("yes")}
+            width={width * 0.4}
             color={theme.success}
             textColor={theme.white}
             onPress={() => {
@@ -1334,6 +885,7 @@ const AuthScreen = ({ navigation, props }) => {
           />
           <ContainedButton
             text={i18n.t("no")}
+            width={width * 0.4}
             color={theme.button}
             textColor={theme.white}
             onPress={() => {
@@ -1349,7 +901,9 @@ const AuthScreen = ({ navigation, props }) => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{i18n.t("previous_disease")}</Text>
+          <Text style={styles.labelText}>
+            {"Patient Has Any Chronic Disease?"}
+          </Text>
           <Text style={styles.labelText2}>
             {i18n.t("previous_disease_hint")}
           </Text>
@@ -1560,16 +1114,15 @@ const AuthScreen = ({ navigation, props }) => {
           color={theme.button}
         />
       )}
-      {view === "LANGUAGE" || view === "EMAIL" ? null : (
+      {view === "NAME" ? null : (
         <View
           style={{
             position: "absolute",
             zIndex: 2,
             top: 0,
             width: width,
-            marginLeft: width * 0.1,
-            height: height * 0.15,
             marginTop: 20,
+            height: height * 0.15,
             display: "flex",
             flexDirection: "row",
             justifyContent: "flex-start",
@@ -1581,11 +1134,7 @@ const AuthScreen = ({ navigation, props }) => {
           </TouchableOpacity>
         </View>
       )}
-      {view === "CHOOSE" && handleChooseScreen()}
-      {view === "EMAIL" && handleEmailScreen()}
-      {view === "LANGUAGE" && handleLanguageInput()}
       {view === "NUMBER" && handleNumberInput()}
-      {view === "OTP" && handleOTPInput()}
       {view === "AGE" && handleDateInput()}
       {view === "GENDER" && handleGenderInput()}
       {view === "DISTRICT" && handleDistrictInput()}

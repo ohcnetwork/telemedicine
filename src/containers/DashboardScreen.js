@@ -19,8 +19,8 @@ import Table from "../components/table/Table";
 import { ContainedButton } from "../components/button/Button";
 import { executeData, clearData } from "../store/actions/ExecuteData";
 import { clearStore } from "../store/actions/SaveAsync";
-
 import Menu from '../components/menu/Menu';
+import AddNewPatient from './AddNewPatient';
 async function getDevice() {
   let device = 0;
   device = await Device.getDeviceTypeAsync();
@@ -271,7 +271,7 @@ const DashboardScreen = ({ props, navigation }) => {
       justifyContent: "flex-start",
     },
     contentSideNavPatient: {
-      marginVertical: 20,
+      marginVertical: 10,
       display: "flex",
       width: width * 0.2,
       flexDirection: "row",
@@ -331,8 +331,7 @@ const DashboardScreen = ({ props, navigation }) => {
   const [active, setActive] = useState(null);
   const [filterMenu, setFilterMenu] = useState(false);
   const[logoutMenu , setLogoutMenu] = useState(false);
-  let ref = useRef();
-
+const[sideNavRootView, setDidNavRootView] = useState('COUNT');
   useEffect(() => {
     if (status && at(asyncState, "token")) {
       if (!at(executeDataResponse, `FETCH_PATIENTS.${page}.isInitiated`)) {
@@ -373,6 +372,7 @@ const DashboardScreen = ({ props, navigation }) => {
   });
 
   const handleRowView = (id, row) => {
+    setDidNavRootView('PATIENT');
     setActiveRow(row);
     setActive(id);
   };
@@ -400,6 +400,22 @@ const DashboardScreen = ({ props, navigation }) => {
     value: null,
     color: theme.paragraph,
   };
+
+  const handlePatientCreate = (data) => {
+    setDidNavRootView('COUNT');
+    dispatch(executeData({
+      type:'SCHEDULE_NEW_ENTRY',
+      method: 'GET',
+      token: at(asyncState, 'token'),
+      req: data
+    }));
+    dispatch(
+      clearData({
+        type: "FETCH_PATIENTS",
+      })
+    );
+    setPatients([]);
+  }
 
   const handleStateAction = () => {
     let requestId = at(activeRow, "request_id");
@@ -441,9 +457,12 @@ const DashboardScreen = ({ props, navigation }) => {
 
   return (
     <View style={styles.root}>
+   
       <View style={styles.container}>
+      
         {desktop ? (
           <View style={styles.desktopContainer}>
+          
             <View style={styles.mainContainer}>
               <View style={styles.topNav}>
                 <View>
@@ -531,7 +550,7 @@ const DashboardScreen = ({ props, navigation }) => {
                   </View>
                   <View style={styles.filters}>
                  
-                    <TouchableOpacity style={styles.addNew}>
+                    <TouchableOpacity onPress={() => setDidNavRootView('ADD_PATIENT')} style={styles.addNew}>
                       <AntDesign name="plus" size={20} color={theme.accent} />
                     </TouchableOpacity>
                      <TouchableOpacity onPress={() => setFilterMenu(!filterMenu)} style={styles.filterIcon}>
@@ -561,7 +580,7 @@ const DashboardScreen = ({ props, navigation }) => {
               </View>
             </View>
             <View style={styles.sideNav}>
-
+            {logoutMenu ? <Menu data={profileMenu} backgroundColor={theme.white} onPress={(item) => handleMenuProfile(item)} height={40} right={60}/> : null}
               <View style={styles.profileTab}>
 
                 <TouchableOpacity onPress={() => setLogoutMenu(!logoutMenu)}>
@@ -593,9 +612,8 @@ const DashboardScreen = ({ props, navigation }) => {
                 </View>
               </View>
               <ScrollView>
-              {logoutMenu ? <Menu data={profileMenu} onPress={(item) => handleMenuProfile(item)} height={50} right={5}/> : null}
 
-                {!activeRow ? (
+                {(sideNavRootView === 'COUNT' )? (
                   <View style={styles.sideNavContentHome}>
                     {countData
                       ? Object.keys(countData).map((key) => {
@@ -636,7 +654,9 @@ const DashboardScreen = ({ props, navigation }) => {
                         })
                       : null}
                   </View>
-                ) : (
+                ) : 
+                (sideNavRootView === 'PATIENT')?
+                (
                   <View style={styles.sideNavContentPatient}>
                     <View
                       style={{
@@ -685,13 +705,13 @@ const DashboardScreen = ({ props, navigation }) => {
                         <Text style={styles.textBold}>
                           {at(activeRow, "name")}
                         </Text>
-                        <Text style={styles.text}>
+                        <Text style={[styles.text, {marginTop: 2}]}>
                           {at(activeRow, "phone_number")}
                         </Text>
-                        <Text style={styles.text}>
+                        <Text style={[styles.text, {marginTop: 2}]}>
                           Age: {at(activeRow, "age")}
                         </Text>
-                        <Text style={styles.text}>
+                        <Text style={[styles.text, {marginTop: 2}]}>
                           Gender:{" "}
                           {at(activeRow, "gender") == 1
                             ? "Male"
@@ -725,31 +745,34 @@ const DashboardScreen = ({ props, navigation }) => {
                         })
                       : null}
                     <Text style={styles.text}>Symptoms:</Text>
-                    <Text style={styles.textBold}>Fever</Text>
-                    <Text style={styles.textBold}>Cold</Text>
-                    <Text style={[styles.text, { marginVertical: 5 }]}>
+                   {at(activeRow, 'symptoms') ?Object.keys(at(activeRow, 'symptoms')).map((item) => {
+                     return(
+                      <Text style={[styles.textBold, {textTransform: 'capitalize'}]}>{activeRow.symptoms[item] } {item}</Text>
+                     )
+                   }) : null}
+                    <Text style={[styles.text, { marginTop: 20, marginBottom: 1 }]}>
                       Contact With Carrier:{" "}
                       {at(activeRow, "contact_with_confirmed_carrier")
                         ? "Yes"
                         : "No"}
                     </Text>
-                    <Text style={[styles.text, { marginVertical: 5 }]}>
+                    <Text style={[styles.text, { marginVertical: 1 }]}>
                       Contact With Suspected Carrier:{" "}
                       {at(activeRow, "contact_with_suspected_carrier")
                         ? "Yes"
                         : "No"}
                     </Text>
-                    <Text style={[styles.text, { marginVertical: 5 }]}>
+                    <Text style={[styles.text, { marginVertical: 1 }]}>
                       Travel History:{" "}
                       {at(activeRow, "past_travel") ? "Yes" : "No"}
                     </Text>
-                    <Text style={[styles.text, { marginVertical: 5 }]}>
+                    <Text style={[styles.text, { marginVertical: 1 }]}>
                       Aged Dependants:{" "}
                       {at(activeRow, "number_of_aged_dependents")
                         ? "Yes"
                         : "No"}
                     </Text>
-                    <Text style={[styles.text, { marginVertical: 5 }]}>
+                    <Text style={[styles.text, { marginVertical: 1 }]}>
                       Relatives with Chronic Disease:{" "}
                       {at(activeRow, "number_of_chronic_diseased_dependents")
                         ? "Yes"
@@ -800,14 +823,41 @@ const DashboardScreen = ({ props, navigation }) => {
                         mLeft={20}
                         textColor={theme.white}
                         onPress={() => {
-                          setActiveRow(null), setActive(null);
+                          setActiveRow(null),setDidNavRootView('COUNT'); setActive(null);
                         }}
                         color={theme.button}
                         text={"Cancel"}
                       />
                     </View>
                   </View>
-                )}
+                ): 
+                (sideNavRootView === 'ADD_PATIENT') ?
+                <View style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  justifyContent: 'flex-start',
+                  padding: 10,
+                  marginTop: 20,
+                  width: width * 0.2
+                }}>
+                  <Text style={{color: theme.button, fontSize: 18, fontWeight: 'bold'}}>Add New Patient</Text>
+                <AddNewPatient handlePatientCreate={(data) => handlePatientCreate(data)} />
+                <View style={
+                 { width: width * 0.2,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }
+
+                }>
+                <ContainedButton text="Cancel"  width={80}
+                        textColor={theme.white} 
+                        onPress={() => setDidNavRootView("COUNT")} color={theme.button}  />
+                        </View>
+                </View>
+                :null
+                }
               </ScrollView>
             </View>
           </View>

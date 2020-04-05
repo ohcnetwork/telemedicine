@@ -28,7 +28,8 @@ let executeDataConfig = {
   EMAIL_LOGIN: {url : "https://tele.coronasafe.in/api/authorize/login"},
   FETCH_PATIENTS: {url: "https://tele.coronasafe.in/api/doctors/requests/fetch"},
   GET_COUNT: {url : "https://tele.coronasafe.in/api/doctors/requests/count"},
-  UPDATE_STATE: {url: "https://tele.coronasafe.in/api/doctors/requests/update"}
+  UPDATE_STATE: {url: "https://tele.coronasafe.in/api/doctors/requests/update"},
+  SCHEDULE_NEW_ENTRY: {url: "https://tele.coronasafe.in/api/user/schedule"}
 };
 
 export const executeData =  payload => {

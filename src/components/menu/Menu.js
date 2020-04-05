@@ -11,7 +11,7 @@ const Menu = (props) => {
             position: 'absolute',
             width: 230,
             height: props.height? props.height : 200,
-            backgroundColor: theme.dashboard,
+            backgroundColor: props.backgroundColor? props.backgroundColor: theme.dashboard,
             zIndex: 10,
             top: 0,
             right: props.right? props.right: 60,
@@ -30,6 +30,7 @@ const Menu = (props) => {
                       onPress={() => props.onPress(item)}
                       style={{
                           width: 180,
+                          backgroundColor: props.backgroundColor? props.backgroundColor : theme.accentDashboard,
                           borderBottomColor: props.height? theme.accent : theme.accentDashboard,
                           borderBottomWidth: 1,
                           height: props.height? Math.round((props.height/ props.data.length) - 10 ) : 45,

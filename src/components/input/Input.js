@@ -10,7 +10,7 @@ const Input = props => {
     textInput: {
       width: props.width ? props.width : width * 0.8,
       height: props.height ? props.height : 50,
-      backgroundColor: theme.background,
+      backgroundColor: props.backgroundColor? props.backgroundColor :theme.background,
       color: theme.text,
       fontSize: props.size ? props.size : 18,
       borderBottomWidth: 2,
