@@ -18,7 +18,6 @@ const Table = props => {
     header.splice(4, 0,'volunteer')
   }
 
-  console.log(props.rows)
 
  
 

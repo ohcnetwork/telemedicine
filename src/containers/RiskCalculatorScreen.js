@@ -252,7 +252,6 @@ const RiskScreen = ({ props, navigation }) => {
 
   const handleSubmitAnswerDispatch = (totalValue, answer) => {
     let actualTotal = 0;
-    console.log(totalValue);
     totalValue.map(item => {
       actualTotal += item;
     });

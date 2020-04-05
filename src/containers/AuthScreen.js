@@ -357,7 +357,6 @@ const AuthScreen = ({ navigation, props }) => {
         break;
       case "EMAIL":
         let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        console.log(re.test(email), email, password);
         if (email) {
           if (!re.test(email) || !password) {
             setEmailError(i18n.t("enter_email_valid"));

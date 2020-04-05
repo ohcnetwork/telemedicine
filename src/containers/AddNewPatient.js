@@ -204,8 +204,9 @@ const AuthScreen = (props) => {
                 let dataResponse = at(executeDataResponse, 'UPDATE_USER_DATA.data');
                 if(!dataResponse.error) {
                     props.handlePatientCreate({
-                        id: dataResponse.id,
-                        parentId: dataResponse.phone_number
+                        userId: dataResponse.id,
+                        userNumber: dataResponse.phone_number,
+                        status: 'attending_by_volunteer'
                     })
                 }
                
@@ -486,7 +487,7 @@ const AuthScreen = (props) => {
     return (
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
-          <Text style={styles.labelText}>{"Patient Travel History?"}</Text>
+          <Text style={styles.labelText}>{"Any history of International travel in past two months?"}</Text>
         </View>
 
         <View style={styles.buttonFieldContainer}>

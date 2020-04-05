@@ -394,6 +394,9 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
   const profileMenu = [
     { label: "LOGOUT", value: "logout" },
   ];
+  var colorArray = ['#FFF5E5', '#FAFCE9', '#F2F9EC', '#FFFF99', '#E5FFFA', 
+		  '#FFE5F0', '#E5FEFF', '#E6F7FF', '#E5E5FF', '#F2E5FF',
+		  '#FAEAF8', '#FEE7E8'];
 
   const placeholderAction = {
     label: "Select an Action",
@@ -404,7 +407,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
   const handlePatientCreate = (data) => {
     setDidNavRootView('COUNT');
     dispatch(executeData({
-      type:'SCHEDULE_NEW_ENTRY',
+      type:'UPDATE_STATE',
       method: 'GET',
       token: at(asyncState, 'token'),
       req: data
@@ -438,7 +441,6 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
     setPatients([]);
   };
   const handleMenuProfile = (item) => {
-    console.log('here')
     setLogoutMenu(false);
     dispatch(clearStore());
     window.location.reload();
@@ -478,7 +480,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                     />
                   </View> */}
 
-                  <View style={[styles.tabBlock, {marginHorizontal: 0, marginRight: 10}]}>
+                  {/* <View style={[styles.tabBlock, {marginHorizontal: 0, marginRight: 10}]}>
                     <Text
                       style={[
                         styles.tabText,
@@ -487,7 +489,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                     >
                       Settings
                     </Text>
-                  </View>
+                  </View> */}
                   <View
                     style={[
                       styles.tabBlock,
@@ -531,7 +533,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                         Patients
                       </Text>
                     </View>
-                    <View
+                    {/* <View
                       style={
                         subTab === "OVERVIEW"
                           ? [styles.tabBlock, styles.tabBlockActive]
@@ -546,7 +548,7 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                       >
                         Overview
                       </Text>
-                    </View>
+                    </View> */}
                   </View>
                   <View style={styles.filters}>
                  
@@ -616,18 +618,16 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                 {(sideNavRootView === 'COUNT' )? (
                   <View style={styles.sideNavContentHome}>
                     {countData
-                      ? Object.keys(countData).map((key) => {
+                      ? Object.keys(countData).map((key, idx) => {
                           return (
-                            <View style={styles.patientDataCard}>
+                            <View key={idx} style={styles.patientDataCard}>
                               <View
                                 style={[
                                   styles.iconContainer,
                                   {
-                                    backgroundColor:
-                                      "hsl(" +
-                                      Math.random() * 360 +
-                                      ", 80%, 90%)",
-                                  },
+                                    backgroundColor: colorArray[idx]
+                                  }
+
                                 ]}
                               >
                                 <AntDesign
@@ -738,16 +738,16 @@ const[sideNavRootView, setDidNavRootView] = useState('COUNT');
                     </Text>
                     <Text style={styles.text}>Medications:</Text>
                     {at(activeRow, "medical_history")
-                      ? at(activeRow, "medical_history").map((item) => {
+                      ? at(activeRow, "medical_history").map((item, idx) => {
                           return (
-                            <Text style={styles.textBold}>{item.disease}</Text>
+                            <Text key={idx} style={styles.textBold}>{item.disease}</Text>
                           );
                         })
                       : null}
                     <Text style={styles.text}>Symptoms:</Text>
-                   {at(activeRow, 'symptoms') ?Object.keys(at(activeRow, 'symptoms')).map((item) => {
+                   {at(activeRow, 'symptoms') ?Object.keys(at(activeRow, 'symptoms')).map((item, idx) => {
                      return(
-                      <Text style={[styles.textBold, {textTransform: 'capitalize'}]}>{activeRow.symptoms[item] } {item}</Text>
+                      <Text key={idx} style={[styles.textBold, {textTransform: 'capitalize'}]}>{activeRow.symptoms[item] } {item}</Text>
                      )
                    }) : null}
                     <Text style={[styles.text, { marginTop: 20, marginBottom: 1 }]}>
