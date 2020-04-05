@@ -295,14 +295,13 @@ const AuthScreen = ({ navigation, props }) => {
     } else if (view === "CHRONIC_DISEASE") {
       if (at(executeDataResponse, "UPDATE_USER_DATA.isDone")) {
         if (loader) {
-          if (JSON.parse(at(executeDataResponse, "UPDATE_USER_DATA.data")).id) {
+          if ((at(executeDataResponse, "UPDATE_USER_DATA.data")).id) {
             dispatch(
               saveToStore({
                 metaData: {
                   primary: true,
-                  id: JSON.parse(
-                    at(executeDataResponse, "UPDATE_USER_DATA.data")
-                  ).id,
+                  id: 
+                    at(executeDataResponse, "UPDATE_USER_DATA.data").id,
                 },
               })
             );

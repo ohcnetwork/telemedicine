@@ -203,7 +203,6 @@ const AuthScreen = (props) => {
             if(at(executeDataResponse, 'UPDATE_USER_DATA.data')){
                 let dataResponse = at(executeDataResponse, 'UPDATE_USER_DATA.data');
                 if(!dataResponse.error) {
-                    dataResponse = JSON.parse(dataResponse);
                     props.handlePatientCreate({
                         id: dataResponse.id,
                         parentId: dataResponse.phone_number
