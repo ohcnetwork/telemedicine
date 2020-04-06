@@ -8,12 +8,14 @@ import {
   TouchableOpacity,
   Dimensions,
   Text,
+  CheckBox,
   ScrollView,
   ActivityIndicator,
   Linking,
+  Image,
 } from "react-native";
 import useTheme from "../constants/theme";
-import { DrawerActions } from "react-navigation-drawer";
+import Input from "../components/input/Input";
 import { AntDesign, EvilIcons, Feather } from "@expo/vector-icons";
 import i18n from "i18n-js";
 import * as Device from "expo-device";
@@ -250,7 +252,7 @@ const DashboardScreen = ({ props, navigation }) => {
       backgroundColor: "#c6f5ff",
     },
     cardText: {
-      fontSize: 13,
+      fontSize: 12,
       fontWeight: "500",
       color: theme.paragraph,
     },
@@ -322,6 +324,7 @@ const DashboardScreen = ({ props, navigation }) => {
   const [desktop, setDesktop] = useState(false);
   const [tab, setTab] = useState("HOME");
   const [subTab, setSubTab] = useState("PATIENT");
+  const [sideTab, setSideTab] = useState("PATIENT");
   const [status, setStatus] = useState("All");
   const [patients, setPatients] = useState([]);
   const [loader, setLoader] = useState(false);
@@ -330,11 +333,30 @@ const DashboardScreen = ({ props, navigation }) => {
   const [countData, setCountData] = useState(null);
   const [activeRow, setActiveRow] = useState(null);
   const [actionValueVolunteer, setActionValueVolunteer] = useState(null);
+  const [
+    actionValueConsulatationSymptoms,
+    setActionConsulatationSymptoms,
+  ] = useState([]);
+  const [
+    actionValueConsulatationCategory,
+    setActionConsulatationCategory,
+  ] = useState(null);
+  const [
+    actionValueConsulatationDecison,
+    setActionConsulatationDecison,
+  ] = useState('HI');
   const [active, setActive] = useState(null);
   const [filterMenu, setFilterMenu] = useState(false);
   const [logoutMenu, setLogoutMenu] = useState(false);
   const [sideNavRootView, setDidNavRootView] = useState("COUNT");
   const [revealPhone, setRevealPhone] = useState(false);
+  const [medicationSymptoms, setMedicationSymptoms] = useState(null);
+  const [medication, setMedication] = useState(null);
+  const [examination, setExamination] = useState(null);
+  const [otherSymptoms, setOtherSymptoms] = useState(null);
+  const [admitted, setAdmitted] = useState(false);
+  const [symptomsMenu, setSymptomsMenu] = useState(false);
+
   useEffect(() => {
     if (status && at(asyncState, "token")) {
       if (!at(executeDataResponse, `FETCH_PATIENTS.${page}.isInitiated`)) {
@@ -361,6 +383,9 @@ const DashboardScreen = ({ props, navigation }) => {
         );
         setLoader(true);
       }
+      if(at(executeDataResponse, 'CONSULTATION_DOCTOR.isDone')) {
+        setLoader(false);
+      }
       if (at(executeDataResponse, "GET_COUNT.isDone")) {
         if (!countData) {
           setCountData(at(executeDataResponse, "GET_COUNT.data"));
@@ -382,6 +407,10 @@ const DashboardScreen = ({ props, navigation }) => {
     setDidNavRootView("PATIENT");
     setActiveRow(row);
     setActive(id);
+    setActionConsulatationSymptoms([]);
+    setActionConsulatationDecison('HI');
+    setActionConsulatationCategory(null);
+    
   };
 
   const actionDataVolunteer = [
@@ -389,6 +418,40 @@ const DashboardScreen = ({ props, navigation }) => {
     { label: "ATTEND", value: "attending_by_volunteer" },
     { label: "FORWARD TO DOCTOR", value: "forwarded_to_doctor" },
     { label: "CLOSE CASE", value: "closed_by_volunteer" },
+  ];
+
+  const actionDataSymptoms = [
+    { value: 1, label: "ASYMPTOMATIC" },
+    { value: 2, label: "FEVER" },
+    { value: 3, label: "SORE THROAT" },
+    { value: 4, label: "COUGH" },
+    { value: 5, label: "BREATHLESSNESS" },
+    { value: 6, label: "MYALGIA" },
+    { value: 7, label: "ABDOMINAL DISCOMFORT" },
+    { value: 8, label: "VOMITING/DIARRHOEA" },
+    { value: 9, label: "OTHERS" },
+  ];
+
+  const actionDataCategory = [
+    { value: "Category-A", label: "Mild(Category A)" },
+    { value: "Category-B", label: "Moderate(Category B)" },
+    { value: "Category-C", label: "Severe(Category C)" },
+  ];
+  const actionDataDecision = [
+    { value: "HI", label: "Home Isolation" },
+    { value: "A", label: "Admission" },
+    { value: "R", label: "Refer to another Hospital" },
+  ];
+
+  const actionDataDoctor = [
+    { label: "ATTEND", value: "attending_by_doctor" },
+    { label: "CLOSE CASE", value: "closed_by_doctor" },
+  ];
+  const actionDataDoctorMenu = [
+    { label: "ALL", value: "All" },
+    { label: "FORWARDED TO DOCTOR", value: "forwarded_to_doctor" },
+    { label: "ATTENDED", value: "attending_by_doctor" },
+    { label: "CLOSED CASES", value: "closed_by_doctor" },
   ];
 
   const actionDataVolunteerMenu = [
@@ -416,6 +479,21 @@ const DashboardScreen = ({ props, navigation }) => {
 
   const placeholderAction = {
     label: "Select an Action",
+    value: null,
+    color: theme.paragraph,
+  };
+  const placeholderActionSymptoms = {
+    label: "Select a Symptom",
+    value: null,
+    color: theme.paragraph,
+  };
+  const placeholderActionDecision = {
+    label: "Select a Decision",
+    value: null,
+    color: theme.paragraph,
+  };
+  const placeholderActionCategory = {
+    label: "Select Suspect Category",
     value: null,
     color: theme.paragraph,
   };
@@ -479,6 +557,43 @@ const DashboardScreen = ({ props, navigation }) => {
     }
   };
 
+  const pageNavigation = (page) => {
+    if (page) {
+      dispatch(
+        clearData({
+          type: "FETCH_PATIENTS",
+        })
+      );
+      setPatients([]);
+      setPage(page);
+    }
+  };
+
+  const handleConsultation = (id) => {
+    setLoader(true);
+    let req = {
+      suggestion: actionValueConsulatationDecison,
+      category: actionValueConsulatationCategory,
+      admitted: admitted,
+      examination_details: examination,
+      existing_medication: medicationSymptoms,
+      prescribed_medication: medication,
+      patient: id,
+      symptoms: actionValueConsulatationSymptoms,
+    };
+    if (otherSymptoms) {
+      req.other_symptoms = otherSymptoms;
+    }
+    dispatch(
+      executeData({
+        type: "CONSULTATION_DOCTOR",
+        method: "POST",
+        token: at(asyncState, "token"),
+        req: JSON.stringify(),
+      })
+    );
+  };
+
   return (
     <View style={styles.root}>
       {loader && (
@@ -502,8 +617,22 @@ const DashboardScreen = ({ props, navigation }) => {
           <View style={styles.desktopContainer}>
             <View style={styles.mainContainer}>
               <View style={styles.topNav}>
-                <View>
-                  <Text style={styles.headerText}>{i18n.t("title")}</Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "flex-start",
+                    display: "flex",
+                  }}
+                >
+                  <Image
+                    resizeMode="contain"
+                    style={{ width: 60, height: 60, opacity: 0.9 }}
+                    source={require("./icon.png")}
+                  />
+                  <Text style={[styles.headerText, { color: theme.button }]}>
+                    {i18n.t("title")}
+                  </Text>
                 </View>
                 <View style={styles.tabBar}>
                   {/* <View style={styles.searchBar}>
@@ -586,12 +715,14 @@ const DashboardScreen = ({ props, navigation }) => {
                     </View> */}
                   </View>
                   <View style={styles.filters}>
-                    <TouchableOpacity
-                      onPress={() => setDidNavRootView("ADD_PATIENT")}
-                      style={styles.addNew}
-                    >
-                      <AntDesign name="plus" size={20} color={theme.accent} />
-                    </TouchableOpacity>
+                    {at(asyncState, "metaData.ROLE") === "IMA_VOLUNTEER" ? (
+                      <TouchableOpacity
+                        onPress={() => setDidNavRootView("ADD_PATIENT")}
+                        style={styles.addNew}
+                      >
+                        <AntDesign name="plus" size={20} color={theme.accent} />
+                      </TouchableOpacity>
+                    ) : null}
                     <TouchableOpacity
                       onPress={() => setFilterMenu(!filterMenu)}
                       style={styles.filterIcon}
@@ -603,16 +734,55 @@ const DashboardScreen = ({ props, navigation }) => {
                 <View style={styles.content}>
                   {/* Table */}
                   <Table
+                    pageNavigation={(page) => pageNavigation(page)}
+                    page={
+                      at(
+                        executeDataResponse,
+                        `FETCH_PATIENTS.${page}.data.page`
+                      )
+                        ? parseInt(
+                            at(
+                              executeDataResponse,
+                              `FETCH_PATIENTS.${page}.data.page`
+                            ),
+                            10
+                          )
+                        : 0
+                    }
+                    doctor={
+                      at(asyncState, "metaData.ROLE") === "DOCTOR"
+                        ? true
+                        : false
+                    }
                     width={Math.round(width * 0.75 - 100)}
                     active={active}
+                    pageCount={ at(
+                      executeDataResponse,
+                      `FETCH_PATIENTS.${page}.data.pageCount`
+                    )
+                      ? parseInt(
+                          at(
+                            executeDataResponse,
+                            `FETCH_PATIENTS.${page}.data.pageCount`
+                          ),
+                          10
+                        )
+                      : 0}
                     handleRowView={(id, row) => handleRowView(id, row)}
                     rows={patients}
                   />
                   {/* TableEnd */}
                   {filterMenu ? (
                     <Menu
+                      height={
+                        at(asyncState, "metaData.ROLE") === "DOCTOR" ? 200 : 250
+                      }
                       onPress={(item) => handleMenuPress(item)}
-                      data={actionDataVolunteerMenu}
+                      data={
+                        at(asyncState, "metaData.ROLE") === "DOCTOR"
+                          ? actionDataDoctorMenu
+                          : actionDataVolunteerMenu
+                      }
                     />
                   ) : null}
                 </View>
@@ -707,9 +877,14 @@ const DashboardScreen = ({ props, navigation }) => {
                         width: width * 0.2,
                       }}
                     >
-                      <View
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (sideTab !== "PATIENT") {
+                            setSideTab("PATIENT");
+                          }
+                        }}
                         style={
-                          tab === "HOME"
+                          sideTab === "PATIENT"
                             ? [
                                 styles.tabBlock,
                                 { marginHorizontal: 0, marginRight: 10 },
@@ -721,188 +896,519 @@ const DashboardScreen = ({ props, navigation }) => {
                         <Text
                           style={[
                             styles.tabText,
-                            tab === "HOME" ? styles.tabTextActive : null,
+                            sideTab === "PATIENT" ? styles.tabTextActive : null,
                           ]}
                         >
                           Patient Details
                         </Text>
-                      </View>
-                      <View style={[styles.tabBlock]}>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (sideTab !== "CONSULTATION") {
+                            setSideTab("CONSULTATION");
+                          }
+                        }}
+                        style={
+                          sideTab === "CONSULTATION"
+                            ? [styles.tabBlock, styles.tabBlockActive]
+                            : [styles.tabBlock]
+                        }
+                      >
                         <Text
                           style={[
                             styles.tabText,
-                            tab === "SETTINGS" ? styles.tabTextActive : null,
+                            sideTab === "CONSULTATION"
+                              ? styles.tabTextActive
+                              : null,
                           ]}
                         >
                           {at(asyncState, "metaData.ROLE") === "IMA_VOLUNTEER"
                             ? "Consultation Summary"
                             : "Consultation"}
                         </Text>
-                      </View>
+                      </TouchableOpacity>
                     </View>
-                    <View style={styles.contentSideNavPatient}>
+                    {sideTab === "PATIENT" ? (
                       <View>
-                        <Text style={styles.textBold}>
-                          {at(activeRow, "name")}
-                        </Text>
-                        {revealPhone? <Text style={[styles.text, { marginTop: 2 }]}>
-                          {at(activeRow, "phone_number")}
-                        </Text> : null}
-                        <Text style={[styles.text, { marginTop: 2 }]}>
-                          Age: {at(activeRow, "age")}
-                        </Text>
-                        <Text style={[styles.text, { marginTop: 2 }]}>
-                          Gender:{" "}
-                          {at(activeRow, "gender") == 1
-                            ? "Male"
-                            : at(activeRow, "gender") == 2
-                            ? "Female"
-                            : "Others"}
-                        </Text>
-                      </View>
-                      <ContainedButton
-                        width={80}
-                        textColor={theme.white}
-                        color={theme.success}
-                        onPress={() => {
-                          setRevealPhone(true);
-                          Linking.openURL(
-                            `tel:${at(activeRow, "phone_number")}`
-                          );
-                          dispatch(
-                            executeData({
-                              method: "GET",
-                              type: "SCHEDULE_NEW_ENTRY",
-                              token: at(asyncState, "token"),
-                              req: {
-                                id: at(activeRow, "id"),
-                                parentId: at(activeRow, "phone_number"),
-                              },
-                            })
-                          );
-                        }}
-                        text={"Call"}
-                        prefix={true}
-                        icon="phone"
-                      />
-                    </View>
-                    <Text style={styles.text}>Location:</Text>
-                    <Text style={styles.textBold}>
-                      {at(activeRow, "local_body_object.name")}
-                    </Text>
-                    <Text style={styles.textBold}>
-                      {at(activeRow, "district_object.name")}
-                    </Text>
-                    <Text style={styles.text}>Medications:</Text>
-                    {at(activeRow, "medical_history")
-                      ? at(activeRow, "medical_history").map((item, idx) => {
-                          return (
-                            <Text key={idx} style={styles.textBold}>
-                              {item.disease}
+                        <View style={styles.contentSideNavPatient}>
+                          <View>
+                            <Text style={styles.textBold}>
+                              {at(activeRow, "name")}
                             </Text>
-                          );
-                        })
-                      : null}
-                    <Text style={styles.text}>Symptoms:</Text>
-                    {at(activeRow, "symptoms")
-                      ? Object.keys(at(activeRow, "symptoms")).map(
-                          (item, idx) => {
-                            return (
-                              <Text
-                                key={idx}
-                                style={[
-                                  styles.textBold,
-                                  { textTransform: "capitalize" },
-                                ]}
-                              >
-                                {activeRow.symptoms[item]} {item}
+                            {revealPhone ? (
+                              <Text style={[styles.text, { marginTop: 2 }]}>
+                                {at(activeRow, "phone_number")}
                               </Text>
-                            );
-                          }
-                        )
-                      : null}
-                    <Text
-                      style={[styles.text, { marginTop: 20, marginBottom: 1 }]}
-                    >
-                      Contact With Carrier:{" "}
-                      {at(activeRow, "contact_with_confirmed_carrier")
-                        ? "Yes"
-                        : "No"}
-                    </Text>
-                    <Text style={[styles.text, { marginVertical: 1 }]}>
-                      Contact With Suspected Carrier:{" "}
-                      {at(activeRow, "contact_with_suspected_carrier")
-                        ? "Yes"
-                        : "No"}
-                    </Text>
-                    <Text style={[styles.text, { marginVertical: 1 }]}>
-                      Travel History:{" "}
-                      {at(activeRow, "past_travel") ? "Yes" : "No"}
-                    </Text>
-                    <Text style={[styles.text, { marginVertical: 1 }]}>
-                      Aged Dependants:{" "}
-                      {at(activeRow, "number_of_aged_dependents")
-                        ? "Yes"
-                        : "No"}
-                    </Text>
-                    <Text style={[styles.text, { marginVertical: 1 }]}>
-                      Relatives with Chronic Disease:{" "}
-                      {at(activeRow, "number_of_chronic_diseased_dependents")
-                        ? "Yes"
-                        : "No"}
-                    </Text>
+                            ) : null}
+                            <Text style={[styles.text, { marginTop: 2 }]}>
+                              Age: {at(activeRow, "age")}
+                            </Text>
+                            <Text style={[styles.text, { marginTop: 2 }]}>
+                              Gender:{" "}
+                              {at(activeRow, "gender") == 1
+                                ? "Male"
+                                : at(activeRow, "gender") == 2
+                                ? "Female"
+                                : "Others"}
+                            </Text>
+                          </View>
+                          <ContainedButton
+                            width={80}
+                            textColor={theme.white}
+                            color={theme.success}
+                            onPress={() => {
+                              setRevealPhone(true);
+                              Linking.openURL(
+                                `tel:${at(activeRow, "phone_number")}`
+                              );
+                            }}
+                            text={"Call"}
+                            prefix={true}
+                            icon="phone"
+                          />
+                        </View>
+                        <Text style={styles.text}>Location:</Text>
+                        <Text style={[styles.textBold, { width: width * 0.2 }]}>
+                          {at(activeRow, "local_body_object.name")}
+                        </Text>
+                        <Text style={styles.textBold}>
+                          {at(activeRow, "district_object.name")}
+                        </Text>
+                        <Text style={styles.text}>Medications:</Text>
+                        {at(activeRow, "medical_history")
+                          ? at(activeRow, "medical_history").map(
+                              (item, idx) => {
+                                return (
+                                  <Text key={idx} style={styles.textBold}>
+                                    {item.disease}
+                                  </Text>
+                                );
+                              }
+                            )
+                          : null}
+                        {at(activeRow, "symptoms") ? (
+                          <Text style={styles.text}>Symptoms:</Text>
+                        ) : null}
+                        {at(activeRow, "symptoms")
+                          ? Object.keys(at(activeRow, "symptoms")).map(
+                              (item, idx) => {
+                                return (
+                                  <Text
+                                    key={idx}
+                                    style={[
+                                      styles.textBold,
+                                      { textTransform: "capitalize" },
+                                    ]}
+                                  >
+                                    {activeRow.symptoms[item]} {item}
+                                  </Text>
+                                );
+                              }
+                            )
+                          : null}
+                        <Text
+                          style={[
+                            styles.text,
+                            { marginTop: 20, marginBottom: 1 },
+                          ]}
+                        >
+                          Contact With Carrier:{" "}
+                          {at(activeRow, "contact_with_confirmed_carrier")
+                            ? "Yes"
+                            : "No"}
+                        </Text>
+                        <Text style={[styles.text, { marginVertical: 1 }]}>
+                          Contact With Suspected Carrier:{" "}
+                          {at(activeRow, "contact_with_suspected_carrier")
+                            ? "Yes"
+                            : "No"}
+                        </Text>
+                        <Text style={[styles.text, { marginVertical: 1 }]}>
+                          Travel History:{" "}
+                          {at(activeRow, "past_travel") ? "Yes" : "No"}
+                        </Text>
+                        <Text style={[styles.text, { marginVertical: 1 }]}>
+                          Aged Dependants:{" "}
+                          {at(activeRow, "number_of_aged_dependents")
+                            ? "Yes"
+                            : "No"}
+                        </Text>
+                        <Text style={[styles.text, { marginVertical: 1 }]}>
+                          Relatives with Chronic Disease:{" "}
+                          {at(
+                            activeRow,
+                            "number_of_chronic_diseased_dependents"
+                          )
+                            ? "Yes"
+                            : "No"}
+                        </Text>
 
-                    <View>
-                      <Text style={[styles.textBold, { marginTop: 20 }]}>
-                        Select an Action:
-                      </Text>
+                        <View>
+                          <Text style={[styles.textBold, { marginTop: 20 }]}>
+                            Select an Action:
+                          </Text>
 
-                      <RNPickerSelect
-                        style={pickerSelectStyles}
-                        placeholder={placeholderAction}
-                        value={
-                          actionValueVolunteer
-                            ? actionValueVolunteer
-                            : at(activeRow, "status")
-                        }
-                        onValueChange={(value) => {
-                          if (value && value !== actionValueVolunteer) {
-                            setActionValueVolunteer(value);
-                          }
-                        }}
-                        items={actionDataVolunteer}
-                      />
-                    </View>
-                    <View
-                      style={{
-                        marginTop: 20,
-                        display: "flex",
-                        flexDirection: "row",
-                        width: width * 0.2,
-                        alignItems: "center",
-                        justifyContent: "flex-start",
-                      }}
-                    >
-                      <ContainedButton
-                        width={80}
-                        textColor={theme.white}
-                        color={theme.success}
-                        text={"Save"}
-                        onPress={() => handleStateAction()}
-                      />
+                          <RNPickerSelect
+                            style={pickerSelectStyles}
+                            placeholder={placeholderAction}
+                            value={
+                              actionValueVolunteer
+                                ? actionValueVolunteer
+                                : at(activeRow, "status")
+                            }
+                            onValueChange={(value) => {
+                              if (value && value !== actionValueVolunteer) {
+                                setActionValueVolunteer(value);
+                              }
+                            }}
+                            items={
+                              at(asyncState, "metaData.ROLE") === "DOCTOR"
+                                ? actionDataDoctor
+                                : actionDataVolunteer
+                            }
+                          />
+                        </View>
+                        <View
+                          style={{
+                            marginTop: 20,
+                            display: "flex",
+                            flexDirection: "row",
+                            width: width * 0.2,
+                            alignItems: "center",
+                            justifyContent: "flex-start",
+                          }}
+                        >
+                          <ContainedButton
+                            width={80}
+                            textColor={theme.white}
+                            color={theme.success}
+                            text={"Save"}
+                            onPress={() => handleStateAction()}
+                          />
 
-                      <ContainedButton
-                        width={80}
-                        mLeft={20}
-                        textColor={theme.white}
-                        onPress={() => {
-                          setActiveRow(null), setDidNavRootView("COUNT");
-                          setActive(null);
-                        }}
-                        color={theme.button}
-                        text={"Cancel"}
-                      />
-                    </View>
+                          <ContainedButton
+                            width={80}
+                            mLeft={20}
+                            textColor={theme.white}
+                            onPress={() => {
+                              setActiveRow(null), setDidNavRootView("COUNT");
+                              setActive(null);
+                            }}
+                            color={theme.button}
+                            text={"Cancel"}
+                          />
+                        </View>
+                      </View>
+                    ) : (
+                      <View
+                        style={[
+                          styles.sideNavContentPatient,
+                          { width: width * 0.2 },
+                        ]}
+                      >
+                        {symptomsMenu ? (
+                          <View
+                            style={{
+                              position: "absolute",
+                              width: 230,
+                              height: 330,
+                              backgroundColor: theme.dashboard,
+                              zIndex: 10,
+                              top: 40,
+                              right: 0,
+                              borderRadius: 5,
+                              padding: 10,
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "flex-start",
+                              borderColor: theme.dashboard,
+                              borderWidth: 1,
+                            }}
+                          >
+                            {actionDataSymptoms.length > 0
+                              ? actionDataSymptoms.map((item) => {
+                                  return (
+                                    <View
+                                      style={{
+                                        width: 180,
+                                        backgroundColor: theme.dashboard,
+                                        borderBottomColor: theme.dashboard,
+                                        borderBottomWidth: 1,
+                                        height: 30,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "flex-start",
+                                        flexDirection: "row",
+                                      }}
+                                    >
+                                      <CheckBox
+                                        onValueChange={() => {
+                                          let symptomsData = [
+                                            ...actionValueConsulatationSymptoms,
+                                          ];
+                                          if (
+                                            !symptomsData.includes(item.value)
+                                          ) {
+                                            symptomsData.push(item.value);
+                                            setActionConsulatationSymptoms(
+                                              symptomsData
+                                            );
+                                          } else {
+                                            symptomsData.splice(
+                                              symptomsData.indexOf(item.value),
+                                              1
+                                            );
+                                            setActionConsulatationSymptoms(
+                                              symptomsData
+                                            );
+                                          }
+                                        }}
+                                        style={{
+                                          marginRight: 10,
+                                        }}
+                                        value={actionValueConsulatationSymptoms.includes(
+                                          item.value
+                                        )}
+                                      />
+                                      <Text
+                                        style={{
+                                          fontSize: 12,
+                                          fontWeight: "bold",
+                                          color: theme.text,
+                                        }}
+                                      >
+                                        {item.label}
+                                      </Text>
+                                    </View>
+                                  );
+                                })
+                              : null}
+                            <ContainedButton
+                              onPress={() => setSymptomsMenu(false)}
+                              width={60}
+                              height={30}
+                              textColor={theme.white}
+                              text={"Save"}
+                            />
+                          </View>
+                        ) : null}
+                        <TouchableOpacity
+                          onPress={() => setSymptomsMenu(!symptomsMenu)}
+                          style={{
+                            borderBottomWidth: 1,
+                            borderBottomColor: theme.button,
+                            display: "flex",
+                            width: width * 0.2,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            height: 35,
+                          }}
+                        >
+                          <Text style={styles.text}>Choose Symptoms</Text>
+                          <AntDesign
+                            name="down"
+                            ccolor={theme.text}
+                            size={12}
+                          />
+                        </TouchableOpacity>
+
+                        {/* <RNPickerSelect
+                          style={pickerSelectStyles}
+                          placeholder={placeholderActionSymptoms}
+                          value={actionValueConsulatationSymptoms}
+                          onValueChange={(value) => {
+                            if (
+                              value &&
+                              value !== actionValueConsulatationSymptoms
+                            ) {
+                              setActionConsulatationSymptoms(value);
+                            }
+                          }}
+                          items={actionDataSymptoms}
+                        /> */}
+
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            display: "flex",
+                            overflow: "scroll",
+                            alignItems: "center",
+                            marginVertical: 10,
+                            justifyContent: "flex-start",
+                            width: width * 0.2,
+                          }}
+                        >
+                          {actionValueConsulatationSymptoms.map((value) => {
+                            return actionDataSymptoms.map((item, idx) => {
+                              if (
+                                item.value === value &&
+                                item.label !== "OTHERS"
+                              ) {
+                                return (
+                                  <View
+                                    style={{
+                                      height: 15,
+                                      marginHorizontal: 5,
+                                      padding: 5,
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      backgroundColor: theme.button,
+                                      borderRadius: 8,
+                                    }}
+                                    key={idx}
+                                  >
+                                    <Text
+                                      style={{
+                                        fontSize: 8,
+                                        fontWeight: "bold",
+                                        color: theme.white,
+                                      }}
+                                    >
+                                      {item.label}
+                                    </Text>
+                                  </View>
+                                );
+                              }
+                              return null;
+                            });
+                          })}
+                        </View>
+                        {actionValueConsulatationSymptoms.includes(9) ? (
+                          <View>
+                            <Text style={styles.text}>
+                              Mention Other Symptoms:
+                            </Text>
+                            <Input
+                              backgroundColor={theme.accentDashboard}
+                              width={width * 0.2}
+                              onChange={(e) => setOtherSymptoms(e)}
+                              multiline={true}
+                              size={12}
+                              numberOfLines={6}
+                              placeholder="Optional Information"
+                              height={70}
+                            />
+                          </View>
+                        ) : null}
+                        <Text style={styles.text}>
+                          Medication, if any for the above-mentioned symptoms:
+                        </Text>
+                        <Input
+                          backgroundColor={theme.accentDashboard}
+                          width={width * 0.2}
+                          onChange={(e) => setMedicationSymptoms(e)}
+                          multiline={true}
+                          size={12}
+                          numberOfLines={6}
+                          placeholder="Optional Information"
+                          height={70}
+                        />
+                        <Text style={styles.text}>Examination Details:</Text>
+                        <Input
+                          backgroundColor={theme.accentDashboard}
+                          width={width * 0.2}
+                          onChange={(e) => setExamination(e)}
+                          multiline={true}
+                          numberOfLines={6}
+                          size={12}
+                          placeholder="Optional Information"
+                          height={70}
+                        />
+                        <Text style={styles.text}>Prescribed Medication:</Text>
+                        <Input
+                          backgroundColor={theme.accentDashboard}
+                          width={width * 0.2}
+                          multiline={true}
+                          onChange={(e) => setMedication(e)}
+                          numberOfLines={6}
+                          size={12}
+                          placeholder="Optional Information"
+                          height={70}
+                        />
+                        <Text style={styles.text}>Category:</Text>
+
+                        <RNPickerSelect
+                          style={pickerSelectStyles}
+                          placeholder={placeholderActionCategory}
+                          value={actionValueConsulatationCategory}
+                          onValueChange={(value) => {
+                            if (
+                              value &&
+                              value !== actionValueConsulatationCategory
+                            ) {
+                              setActionConsulatationCategory(value);
+                            }
+                          }}
+                          items={actionDataCategory}
+                        />
+                        <Text style={styles.text}>
+                          Decision after Consultation():
+                        </Text>
+
+                        <RNPickerSelect
+                          style={pickerSelectStyles}
+                          placeholder={placeholderActionDecision}
+                          value={actionValueConsulatationDecison}
+                          onValueChange={(value) => {
+                            if (
+                              value &&
+                              value !== actionValueConsulatationDecison
+                            ) {
+                              setActionConsulatationDecison(value);
+                            }
+                          }}
+                          items={actionDataDecision}
+                        />
+                        <View
+                          style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "flex-end",
+                            justifyContent: "space-evenly",
+                          }}
+                        >
+                          <View
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "flex-start",
+                              justifyContent: "flex-start",
+                            }}
+                          >
+                            <Text style={styles.text}>Admitted:</Text>
+                            <CheckBox
+                              value={admitted}
+                              onValueChange={() => {
+                                setAdmitted(!admitted);
+                              }}
+                            />
+                          </View>
+                          <ContainedButton
+                            width={80}
+                            mLeft={20}
+                            textColor={theme.white}
+                            onPress={() => {
+                              handleConsultation(at(activeRow, "id"));
+                            }}
+                            color={theme.success}
+                            text={"Save"}
+                          />
+                          <ContainedButton
+                            width={80}
+                            mLeft={30}
+                            textColor={theme.white}
+                            onPress={() => {
+                              setActiveRow(null), setDidNavRootView("COUNT");
+                              setActive(null);
+                            }}
+                            color={theme.button}
+                            text={"Cancel"}
+                          />
+                        </View>
+                      </View>
+                    )}
                   </View>
                 ) : sideNavRootView === "ADD_PATIENT" ? (
                   <View

@@ -13,7 +13,7 @@ const Menu = (props) => {
             height: props.height? props.height : 250,
             backgroundColor: props.backgroundColor? props.backgroundColor: theme.dashboard,
             zIndex: 10,
-            top: 0,
+            top: props.top ? props.top : 0,
             right: props.right? props.right: 60,
             borderRadius: 5,
             padding: 10,

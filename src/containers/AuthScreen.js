@@ -9,7 +9,7 @@ import {
   Dimensions,
   Text,
   CheckBox,
-  Image
+  Image,
 } from "react-native";
 import useTheme from "../constants/theme";
 import at from "v-at";
@@ -295,13 +295,12 @@ const AuthScreen = ({ navigation, props }) => {
     } else if (view === "CHRONIC_DISEASE") {
       if (at(executeDataResponse, "UPDATE_USER_DATA.isDone")) {
         if (loader) {
-          if ((at(executeDataResponse, "UPDATE_USER_DATA.data")).id) {
+          if (at(executeDataResponse, "UPDATE_USER_DATA.data").id) {
             dispatch(
               saveToStore({
                 metaData: {
                   primary: true,
-                  id: 
-                    at(executeDataResponse, "UPDATE_USER_DATA.data").id,
+                  id: at(executeDataResponse, "UPDATE_USER_DATA.data").id,
                 },
               })
             );
@@ -1098,46 +1097,62 @@ const AuthScreen = ({ navigation, props }) => {
           justifyContent: "space-evenly",
         }}
       >
-          <View
-        style={{
-          width: width * 0.5,
-          height: height,
-          backgroundColor: '#699bce',
-          display: 'flex',
-          flexDirection: "columnn",
-          alignItems: 'flex-start',
-          justifyContent: 'flex-start',
-          padding: 20
-        }}
-        >
-          <Text style={{
-            color: theme.white,
-            fontSize: 24,
-            fontWeight: 'bold',
-            marginTop: 60,
-            marginLeft: 50
-          }}>Suraksha</Text>
-          <View style={{
-            display: 'flex',
-            height: height * 0.82,
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
+        <View
+          style={{
             width: width * 0.5,
-          }}>
-<Image
-          resizeMode="center"
-
-        style={
-          {width: 500,
-          height: 500,
-        opacity: 1}
-        }
-        source={require('./login.png')}
-      />
-      </View>
+            height: height,
+            backgroundColor: "#397abe",
+            display: "flex",
+            flexDirection: "columnn",
+            alignItems: "flex-start",
+            justifyContent: "flex-start",
+            padding: 20,
+          }}
+        >
+          <View
+            style={{
+              width: width * 0.45,
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "flex-start",
+            }}
+          >
+            <Image
+              resizeMode="contain"
+              style={{ width: 60, height: 60, opacity: 1 }}
+              source={require("./icon.png")}
+            />
+            <Text
+              style={{
+                color: theme.white,
+                fontSize: 24,
+                fontWeight: "bold",
+              }}
+            >
+              Suraksha
+            </Text>
+          </View>
+          <View
+            style={{
+              display: "flex",
+              height: height * 0.82,
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              width: width * 0.5,
+            }}
+          >
+            <Image
+              resizeMode="center"
+              style={{ width: 500, height: 500, opacity: 1 }}
+              source={require("./login.png")}
+            />
+          </View>
         </View>
-        <View style={[styles.inputContainerEmail, {backgroundColor: theme.white}]}>
+        <View
+          style={[styles.inputContainerEmail, { backgroundColor: theme.white }]}
+        >
           {emailError ? (
             <Text style={styles.labelTextError}>
               {"Invalid Email or Password! Try Again"}
@@ -1147,9 +1162,14 @@ const AuthScreen = ({ navigation, props }) => {
           <View style={styles.textContainerEmail}>
             <Text style={styles.labelText}>{i18n.t("enter_email")}</Text>
           </View>
-          <View style={[styles.textFieldContainer, { width: width * 0.4 , backgroundColor: theme.white}]}>
+          <View
+            style={[
+              styles.textFieldContainer,
+              { width: width * 0.4, backgroundColor: theme.white },
+            ]}
+          >
             <TextInput
-             backgroundColor={theme.white}
+              backgroundColor={theme.white}
               autoCompleteType="email"
               keyboardType="email-address"
               borderColor={emailError ? theme.error : theme.button}
@@ -1162,9 +1182,14 @@ const AuthScreen = ({ navigation, props }) => {
           <View style={styles.textContainerEmail}>
             <Text style={styles.labelText}>{i18n.t("enter_password")}</Text>
           </View>
-          <View style={[styles.textFieldContainer, { width: width * 0.4 , backgroundColor: theme.white}]}>
+          <View
+            style={[
+              styles.textFieldContainer,
+              { width: width * 0.4, backgroundColor: theme.white },
+            ]}
+          >
             <TextInput
-            backgroundColor={theme.white}
+              backgroundColor={theme.white}
               secureTextEntry={true}
               textContentType="password"
               autoCompleteType="password"
@@ -1183,7 +1208,6 @@ const AuthScreen = ({ navigation, props }) => {
             />
           </TouchableOpacity>
         </View>
-      
       </View>
     );
   };
