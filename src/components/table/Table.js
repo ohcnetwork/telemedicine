@@ -257,6 +257,7 @@ const Table = (props) => {
             style={{
               width: 20,
               height: 20,
+              opacity: (props.page >= props.pageCount) ? 0.6 : 1
             }}
           >
             <AntDesign name="right" size={20} color={theme.button} />

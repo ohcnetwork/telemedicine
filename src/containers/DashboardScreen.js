@@ -385,6 +385,7 @@ const DashboardScreen = ({ props, navigation }) => {
       }
       if(at(executeDataResponse, 'CONSULTATION_DOCTOR.isDone') || at(executeDataResponse, 'CONSULTATION_DOCTOR.isError')) {
         setLoader(false);
+        setDidNavRootView('COUNT');
       }
       if (at(executeDataResponse, "GET_COUNT.isDone")) {
         if (!countData) {
