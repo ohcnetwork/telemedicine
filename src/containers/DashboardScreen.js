@@ -383,7 +383,7 @@ const DashboardScreen = ({ props, navigation }) => {
         );
         setLoader(true);
       }
-      if(at(executeDataResponse, 'CONSULTATION_DOCTOR.isDone')) {
+      if(at(executeDataResponse, 'CONSULTATION_DOCTOR.isDone') || at(executeDataResponse, 'CONSULTATION_DOCTOR.isError')) {
         setLoader(false);
       }
       if (at(executeDataResponse, "GET_COUNT.isDone")) {
@@ -580,6 +580,7 @@ const DashboardScreen = ({ props, navigation }) => {
       prescribed_medication: medication,
       patient: id,
       symptoms: actionValueConsulatationSymptoms,
+      request_id: at(activeRow, 'request_id')
     };
     if (otherSymptoms) {
       req.other_symptoms = otherSymptoms;
@@ -589,7 +590,7 @@ const DashboardScreen = ({ props, navigation }) => {
         type: "CONSULTATION_DOCTOR",
         method: "POST",
         token: at(asyncState, "token"),
-        req: JSON.stringify(),
+        req: JSON.stringify(req),
       })
     );
   };
