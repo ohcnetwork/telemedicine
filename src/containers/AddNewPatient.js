@@ -513,7 +513,7 @@ const AuthScreen = (props) => {
       <View style={styles.inputContainer}>
         <View style={styles.textContainer}>
           <Text style={styles.labelText}>
-            {"No of People He's Living With?"}
+            {"No of People He/She is Living With?"}
           </Text>
         </View>
         <View style={styles.textFieldContainer}>

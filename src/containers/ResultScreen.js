@@ -255,7 +255,8 @@ const ResultScreen = ({ props, navigation }) => {
             <ContainedButton
             onPress={() => handleRequestCall()}
               width={width * 0.6}
-              text="Request For Medical Call"
+              color={at(executeDataResponse, 'REQUEST_CALL_USER.data.message')? theme.success: theme.button}
+              text={at(executeDataResponse, 'REQUEST_CALL_USER.data.message')? "Call Requestd" : "Request For Medical Call"}
               textColor={theme.white}
             />
           )}
