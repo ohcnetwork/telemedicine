@@ -356,7 +356,7 @@ const AuthScreen = (props) => {
       });
       dataExecute.local_body_object = local_body_object;
           district_object.name = at(asyncState, 'metaData.district');
-          district_object.state = 'Kerala';
+          district_object.state = 1;
 
       dataExecute.district_object = district_object;
       dispatch(
