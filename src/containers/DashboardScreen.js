@@ -344,7 +344,7 @@ const DashboardScreen = ({ props, navigation }) => {
   const [
     actionValueConsulatationDecison,
     setActionConsulatationDecison,
-  ] = useState('HI');
+  ] = useState("HI");
   const [active, setActive] = useState(null);
   const [filterMenu, setFilterMenu] = useState(false);
   const [logoutMenu, setLogoutMenu] = useState(false);
@@ -383,9 +383,17 @@ const DashboardScreen = ({ props, navigation }) => {
         );
         setLoader(true);
       }
-      if(at(executeDataResponse, 'CONSULTATION_DOCTOR.isDone') || at(executeDataResponse, 'CONSULTATION_DOCTOR.isError')) {
+      if (
+        at(executeDataResponse, "CONSULTATION_DOCTOR.isDone") ||
+        at(executeDataResponse, "CONSULTATION_DOCTOR.isError")
+      ) {
         setLoader(false);
-        setDidNavRootView('COUNT');
+        setDidNavRootView("COUNT");
+        dispatch(
+          clearData({
+            type: "CONSULTATION_DOCTOR",
+          })
+        );
       }
       if (at(executeDataResponse, "GET_COUNT.isDone")) {
         if (!countData) {
@@ -409,9 +417,8 @@ const DashboardScreen = ({ props, navigation }) => {
     setActiveRow(row);
     setActive(id);
     setActionConsulatationSymptoms([]);
-    setActionConsulatationDecison('HI');
+    setActionConsulatationDecison("HI");
     setActionConsulatationCategory(null);
-    
   };
 
   const actionDataVolunteer = [
@@ -581,7 +588,7 @@ const DashboardScreen = ({ props, navigation }) => {
       prescribed_medication: medication,
       patient: id,
       symptoms: actionValueConsulatationSymptoms,
-      request_id: at(activeRow, 'request_id')
+      request_id: at(activeRow, "request_id"),
     };
     if (otherSymptoms) {
       req.other_symptoms = otherSymptoms;
@@ -758,18 +765,20 @@ const DashboardScreen = ({ props, navigation }) => {
                     }
                     width={Math.round(width * 0.75 - 100)}
                     active={active}
-                    pageCount={ at(
-                      executeDataResponse,
-                      `FETCH_PATIENTS.${page}.data.pageCount`
-                    )
-                      ? parseInt(
-                          at(
-                            executeDataResponse,
-                            `FETCH_PATIENTS.${page}.data.pageCount`
-                          ),
-                          10
-                        )
-                      : 0}
+                    pageCount={
+                      at(
+                        executeDataResponse,
+                        `FETCH_PATIENTS.${page}.data.pageCount`
+                      )
+                        ? parseInt(
+                            at(
+                              executeDataResponse,
+                              `FETCH_PATIENTS.${page}.data.pageCount`
+                            ),
+                            10
+                          )
+                        : 0
+                    }
                     handleRowView={(id, row) => handleRowView(id, row)}
                     rows={patients}
                   />
@@ -904,31 +913,35 @@ const DashboardScreen = ({ props, navigation }) => {
                           Patient Details
                         </Text>
                       </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => {
-                          if (sideTab !== "CONSULTATION") {
-                            setSideTab("CONSULTATION");
-                          }
-                        }}
-                        style={
-                          sideTab === "CONSULTATION"
-                            ? [styles.tabBlock, styles.tabBlockActive]
-                            : [styles.tabBlock]
-                        }
-                      >
-                        <Text
-                          style={[
-                            styles.tabText,
+                      {!(
+                        at(asyncState, "metaData.ROLE") === "IMA_VOLUNTEER"
+                      ) ? (
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (sideTab !== "CONSULTATION") {
+                              setSideTab("CONSULTATION");
+                            }
+                          }}
+                          style={
                             sideTab === "CONSULTATION"
-                              ? styles.tabTextActive
-                              : null,
-                          ]}
+                              ? [styles.tabBlock, styles.tabBlockActive]
+                              : [styles.tabBlock]
+                          }
                         >
-                          {at(asyncState, "metaData.ROLE") === "IMA_VOLUNTEER"
-                            ? "Consultation Summary"
-                            : "Consultation"}
-                        </Text>
-                      </TouchableOpacity>
+                          <Text
+                            style={[
+                              styles.tabText,
+                              sideTab === "CONSULTATION"
+                                ? styles.tabTextActive
+                                : null,
+                            ]}
+                          >
+                            {at(asyncState, "metaData.ROLE") === "IMA_VOLUNTEER"
+                              ? "Consultation Summary"
+                              : "Consultation"}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : null}
                     </View>
                     {sideTab === "PATIENT" ? (
                       <View>
@@ -1044,6 +1057,105 @@ const DashboardScreen = ({ props, navigation }) => {
                             ? "Yes"
                             : "No"}
                         </Text>
+
+                        {at(activeRow, "last_consultation") ? (
+                          <Text
+                            style={[
+                              styles.textBold,
+                              { marginTop: 20, color: theme.button },
+                            ]}
+                          >
+                            Last Consultation Summary:{" "}
+                          </Text>
+                        ) : null}
+                        {at(activeRow, "last_consultation.suggestion_text") ? (
+                          <Text
+                            style={[
+                              styles.text,
+                              { marginTop: 4, textTransform: "capitalize" },
+                            ]}
+                          >
+                            Suggestion:{" "}
+                            {at(activeRow, "last_consultation.suggestion_text").toLowerCase()}
+                          </Text>
+                        ) : null}
+                       {at(activeRow, "last_consultation.symptoms") ? (
+                          at(activeRow, "last_consultation.symptoms").map((value) => {
+                            return actionDataSymptoms.map((item) => {
+                              if(item.value === value && item.label !== 'OTHERS') {
+                                return(
+                                  <Text
+                                  style={[
+                                    styles.text,
+                                    { marginTop: 4, textTransform: "capitalize" },
+                                  ]}
+                                >
+                                  Symptoms:{" "}
+                                  {item.label.toLowerCase()}
+                                </Text>
+                                )
+                              }  else if(item.label === 'OTHERS' && item.value === value) {
+                                <Text
+                                style={[
+                                  styles.text,
+                                  { marginTop: 4, textTransform: "capitalize" },
+                                ]}
+                              >
+                                Other Symptoms:{" "}
+                                { at(activeRow, "last_consultation.other_symptoms").toLowerCase()}
+                              </Text>
+                              }
+                              return null;
+                            })
+                           
+                          })
+                         
+                        ) : null}
+                        {at(activeRow, "last_consultation.category") ? (
+                          <Text
+                            style={[
+                              styles.text,
+                              { marginTop: 4, textTransform: "capitalize" },
+                            ]}
+                          >
+                            Category:{" "}
+                            {at(activeRow, "last_consultation.category")}
+                          </Text>
+                        ) : null}
+                        {at(activeRow, "last_consultation.examination_details") ? (
+                          <Text
+                            style={[
+                              styles.text,
+                              { marginTop: 4, textTransform: "capitalize" },
+                            ]}
+                          >
+                            Examination Details:{" "}
+                            {at(activeRow, "last_consultation.examination_details")}
+                          </Text>
+                        ) : null}
+                        {at(activeRow, "last_consultation.existing_medication") ? (
+                          <Text
+                            style={[
+                              styles.text,
+                              { marginTop: 4, textTransform: "capitalize" },
+                            ]}
+                          >
+                            Existing Medication:{" "}
+                            {at(activeRow, "last_consultation.existing_medication")}
+                          </Text>
+                        ) : null}
+                         {at(activeRow, "last_consultation.prescribed_medication") ? (
+                          <Text
+                            style={[
+                              styles.text,
+                              { marginTop: 4, textTransform: "capitalize" },
+                            ]}
+                          >
+                            Prescribed Medication:{" "}
+                            {at(activeRow, "last_consultation.prescribed_medication")}
+                          </Text>
+                        ) : null}
+
 
                         <View>
                           <Text style={[styles.textBold, { marginTop: 20 }]}>
