@@ -1065,7 +1065,7 @@ const DashboardScreen = ({ props, navigation }) => {
                               { marginTop: 20, color: theme.button },
                             ]}
                           >
-                            Last Consultation Summary:{" "}
+                            Last Consultation Details:{" "}
                           </Text>
                         ) : null}
                         {at(activeRow, "last_consultation.suggestion_text") ? (
