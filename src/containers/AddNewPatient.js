@@ -251,28 +251,8 @@ const AuthScreen = (props) => {
         break;
       case "GENDER":
         if (gender) {
-          dispatch(
-            executeData({
-              type: "DISTRICT_LIST",
-              method: "GET",
-              cookies: true,
-            })
-          );
-          setLoader(true);
-          setView("DISTRICT");
-        } else {
-          setGenderError(true);
-        }
-        break;
-      case "DISTRICT":
-        if (gender) {
-          let districtName = null;
-          district.forEach((item) => {
-            if (item.id == districtValue) {
-              districtName = item.name;
-            }
-          });
-
+          let districtName = at(asyncState, 'metaData.district');
+         
           dispatch(
             executeData({
               type: "LOCAL_BODY_LIST",
@@ -281,7 +261,7 @@ const AuthScreen = (props) => {
               req: {
                 state: 1,
                 state_name: "kerala",
-                district: districtValue,
+                district: at(asyncState, 'metaData.district_id'),
                 districtName: districtName,
               },
             })
@@ -348,7 +328,7 @@ const AuthScreen = (props) => {
       dataExecute.phone_number = numberValue.slice(3);
       dataExecute.contact_with_carrier = contactCarrier;
       dataExecute.local_body = localityValue;
-      dataExecute.district = districtValue;
+      dataExecute.district = at(asyncState, 'metaData.district_id');
       dataExecute.no_of_people = people;
       dataExecute.number_of_aged_dependents = agedRelative
         ? 1
@@ -375,12 +355,9 @@ const AuthScreen = (props) => {
         }
       });
       dataExecute.local_body_object = local_body_object;
-      district.map((item) => {
-        if (item.id == dataExecute.district) {
-          district_object.name = item.name;
-          district_object.state = item.state;
-        }
-      });
+          district_object.name = at(asyncState, 'metaData.district');
+          district_object.state = 'Kerala';
+
       dataExecute.district_object = district_object;
       dispatch(
         executeData({
@@ -405,11 +382,11 @@ const AuthScreen = (props) => {
       case "GENDER":
         setView("AGE");
         break;
-      case "DISTRICT":
-        setView("GENDER");
-        break;
+      // case "DISTRICT":
+      //   setView("GENDER");
+      //   break;
       case "ADDRESS":
-        setView("DISTRICT");
+        setView("GENDER");
         break;
       case "PEOPLE":
         setView("ADDRESS");
@@ -1164,7 +1141,7 @@ const AuthScreen = (props) => {
       {view === "NUMBER" && handleNumberInput()}
       {view === "AGE" && handleDateInput()}
       {view === "GENDER" && handleGenderInput()}
-      {view === "DISTRICT" && handleDistrictInput()}
+      {/* {view === "DISTRICT" && handleDistrictInput()} */}
       {view === "NAME" && handleNameInput()}
       {view === "PEOPLE" && handlePeopleInput()}
       {view === "COUNTRY" && handleCountryInput()}

@@ -331,9 +331,9 @@ const AuthScreen = ({ navigation, props }) => {
       saveToStoreTokenAndData({
         metaData: {
           primary: true,
-          ...JSON.parse(
+          ...
             at(executeDataResponse, "SEND_OTP_CHECK.data.userInfo")
-          ),
+          ,
           activeUser: at(asyncState, "metaData.name"),
           name: at(executeDataResponse, "SEND_OTP_CHECK.data.userInfo.name"),
         },
@@ -396,7 +396,7 @@ const AuthScreen = ({ navigation, props }) => {
               },
             })
           );
-          dispatch(saveToStore({ metaData: { phoneNumber: numberValue } }));
+          dispatch(saveToStore({ metaData: { phoneNumber: number } }));
 
           setView("OTP");
         } else {
@@ -535,16 +535,16 @@ const AuthScreen = ({ navigation, props }) => {
         dispatch(
           saveToStore({ metaData: { number_of_aged_dependents: value } })
         );
-        setView("RELATIVE_CHRONIC_DISEASE");
-        break;
-      case "RELATIVE_CHRONIC_DISEASE":
-        dispatch(
-          saveToStore({
-            metaData: { number_of_chronic_diseased_dependents: value },
-          })
-        );
         setView("CHRONIC_DISEASE");
         break;
+      // case "RELATIVE_CHRONIC_DISEASE":
+      //   dispatch(
+      //     saveToStore({
+      //       metaData: { number_of_chronic_diseased_dependents: value },
+      //     })
+      //   );
+      //   setView("CHRONIC_DISEASE");
+      //   break;
       case "CHRONIC_DISEASE":
         handleRiskScreenNav();
         break;
@@ -676,12 +676,12 @@ const AuthScreen = ({ navigation, props }) => {
       case "AGE_QUESTION":
         setView("CARRIER_SUSPECTED");
         break;
-      case "RELATIVE_CHRONIC_DISEASE":
+      case "CHRONIC_DISEASE":
         setView("AGE_QUESTION");
         break;
-      case "CHRONIC_DISEASE":
-        setView("RELATIVE_CHRONIC_DISEASE");
-        break;
+      // case "CHRONIC_DISEASE":
+      //   setView("RELATIVE_CHRONIC_DISEASE");
+      //   break;
       default:
         break;
     }
@@ -1594,7 +1594,7 @@ const AuthScreen = ({ navigation, props }) => {
       {view === "CARRIER" && handleInputCarrier()}
       {view === "CARRIER_SUSPECTED" && handleInputCarrierSuspected()}
       {view === "AGE_QUESTION" && handleInputAged()}
-      {view === "RELATIVE_CHRONIC_DISEASE" && handleInputRelativeChronic()}
+      {/* {view === "RELATIVE_CHRONIC_DISEASE" && handleInputRelativeChronic()} */}
       {view === "CHRONIC_DISEASE" && handleInputChronic()}
     </View>
   );
