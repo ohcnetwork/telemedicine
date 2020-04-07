@@ -240,7 +240,10 @@ const AuthScreen = (props) => {
         }
         break;
       case "AGE":
-        if (age) {
+
+        let ageRegex = new RegExp('^[0-9]*$');
+
+        if (age && ageRegex.test(age)) {
           setView("GENDER");
         } else {
           setAgeError(true);
@@ -290,9 +293,10 @@ const AuthScreen = (props) => {
         }
         break;
       case "ADDRESS":
-        if (at(address, "postalCode")) {
+        if (localityValue) {
           setView("PEOPLE");
         } else {
+          setLocalityError(true);
           return;
         }
         break;
@@ -313,12 +317,12 @@ const AuthScreen = (props) => {
         break;
       case "AGE_QUESTION":
         setAgedRelative(value);
-        setView("RELATIVE_CHRONIC_DISEASE");
-        break;
-      case "RELATIVE_CHRONIC_DISEASE":
-        setChronicRelative(value);
         setView("CHRONIC_DISEASE");
         break;
+      // case "RELATIVE_CHRONIC_DISEASE":
+      //   setChronicRelative(value);
+      //   setView("CHRONIC_DISEASE");
+      //   break;
       case "CHRONIC_DISEASE":
         handleRiskScreenNav();
         break;
@@ -422,15 +426,20 @@ const AuthScreen = (props) => {
       case "AGE_QUESTION":
         setView("CARRIER_SUSPECTED");
         break;
-      case "RELATIVE_CHRONIC_DISEASE":
+      case "CHRONIC_DISEASE":
         setView("AGE_QUESTION");
         break;
-      case "CHRONIC_DISEASE":
-        setView("RELATIVE_CHRONIC_DISEASE");
-        break;
+      // case "CHRONIC_DISEASE":
+      //   setView("RELATIVE_CHRONIC_DISEASE");
+      //   break;
       default:
         break;
     }
+  };
+  const placeholderLocality = {
+    label: "Select Locality",
+    value: null,
+    color: theme.paragraph,
   };
   //   const handleDateChange = (type, date) => {
   //     if (type === "dismissed") {
@@ -464,6 +473,12 @@ const AuthScreen = (props) => {
         </View>
         <View style={styles.textFieldContainer}>
           <TextInput
+          returnKeyType="done"
+          onKeyPress={(e) => {
+            if(e.nativeEvent.key === 'Enter') {
+              handleNavigation()
+            }
+          }}
             width={width}
             backgroundColor={theme.accentDashboard}
             borderColor={nameError ? theme.error : theme.button}
@@ -553,13 +568,13 @@ const AuthScreen = (props) => {
             style={{
               ...styles.selectTextFieldContainer,
               ...{
-                borderBottomColor: districtError ? theme.error : theme.button,
+                borderBottomColor: localityError ? theme.error : theme.button,
               },
             }}
           >
             <RNPickerSelect
               style={pickerSelectStyles}
-              placeholder={placeholderDistrict}
+              placeholder={placeholderLocality}
               value={localityValue}
               onValueChange={(value) => {
                 setLocalityError(false);
@@ -576,7 +591,7 @@ const AuthScreen = (props) => {
               }
             />
           </View>
-          <Text style={styles.labelText2}>{i18n.t("pincode")}</Text>
+          {/* <Text style={styles.labelText2}>{i18n.t("pincode")}</Text>
           <TextInput
            width={width * 0.8}
            backgroundColor={theme.accentDashboard}
@@ -592,14 +607,14 @@ const AuthScreen = (props) => {
               at(address, "postalCode") ? at(address, "postalCode") : null
             }
             keyboardType="numeric"
-          />
+          /> */}
         </View>
         <TouchableOpacity onPress={handleNavigation}>
           <AntDesign
             name={
-              !at(address, "postalCode") ? "exclamationcircle" : "rightcircle"
+              localityError ? "exclamationcircle" : "rightcircle"
             }
-            color={!at(address, "postalCode") ? theme.error : theme.button}
+            color={localityError ? theme.error : theme.button}
             size={50}
           />
         </TouchableOpacity>
@@ -614,6 +629,12 @@ const AuthScreen = (props) => {
         </View>
         <View style={styles.textFieldContainer}>
           <TextInput
+          returnKeyType="done"
+          onKeyPress={(e) => {
+            if(e.nativeEvent.key === 'Enter') {
+              handleNavigation()
+            }
+          }}
             width={width}
             backgroundColor={theme.accentDashboard}
             borderColor={ageError ? theme.error : theme.button}
@@ -705,6 +726,12 @@ const AuthScreen = (props) => {
         </View>
         <View style={styles.textFieldContainer}>
           <TextInput
+          returnKeyType="done"
+          onKeyPress={(e) => {
+            if(e.nativeEvent.key === 'Enter') {
+              handleNavigation()
+            }
+          }}
             autoCompleteType="tel"
             maxLength={13}
             width={width}
@@ -1145,7 +1172,7 @@ const AuthScreen = (props) => {
       {view === "CARRIER" && handleInputCarrier()}
       {view === "CARRIER_SUSPECTED" && handleInputCarrierSuspected()}
       {view === "AGE_QUESTION" && handleInputAged()}
-      {view === "RELATIVE_CHRONIC_DISEASE" && handleInputRelativeChronic()}
+      {/* {view === "RELATIVE_CHRONIC_DISEASE" && handleInputRelativeChronic()} */}
       {view === "CHRONIC_DISEASE" && handleInputChronic()}
     </View>
   );

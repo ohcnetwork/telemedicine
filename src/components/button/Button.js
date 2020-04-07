@@ -64,7 +64,8 @@ export const ContainedButton = props => {
       marginTop: props.mTop ? props.mTop : 0,
       marginLeft: props.mLeft ? props.mLeft : 0,
       marginRight: props.mRight ? props.mRight : 0,
-      marginBottom: props.mBottom ? props.mBottom : 0
+      marginBottom: props.mBottom ? props.mBottom : 0,
+      opacity: props.opacity? props.opacity : 1
     },
     text: {
       textAlign: 'center',
@@ -75,7 +76,7 @@ export const ContainedButton = props => {
   });
 
   return (
-    <TouchableOpacity onPress={props.onPress} style={styles.button}>
+    <TouchableOpacity disabled={props.disabled} onPress={props.onPress} style={styles.button}>
       {props.prefix ? (
         <AntDesign name={props.icon} size={15} color={theme.white} />
       ) : null}

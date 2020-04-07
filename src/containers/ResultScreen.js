@@ -212,7 +212,7 @@ const ResultScreen = ({ props, navigation }) => {
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => {navigation.navigate("Home");
+        <TouchableOpacity onPress={() => {navigation.navigate("Home", {navigateParam : false});
       dispatch(clearData({
         type: 'REQUEST_CALL_USER'
       }))

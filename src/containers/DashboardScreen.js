@@ -83,7 +83,7 @@ const DashboardScreen = ({ props, navigation }) => {
       display: "flex",
       flexDirection: "row",
       alignItems: "center",
-      width: Math.round(width * 0.75 - 100),
+      width: Math.round(width * 0.7 - 100),
     },
     headerText: {
       fontSize: 22,
@@ -100,7 +100,7 @@ const DashboardScreen = ({ props, navigation }) => {
     },
     sideNav: {
       backgroundColor: theme.accentDashboard,
-      width: width * 0.25,
+      width: width * 0.3,
       height: height,
       paddingVertical: 20,
       paddingHorizontal: 10,
@@ -111,7 +111,7 @@ const DashboardScreen = ({ props, navigation }) => {
     },
     mainContainer: {
       backgroundColor: theme.dashboard,
-      width: width * 0.75,
+      width: width * 0.7,
       height: height,
       padding: 50,
     },
@@ -163,7 +163,7 @@ const DashboardScreen = ({ props, navigation }) => {
       flexDirection: "column",
       alignItems: "flex-start",
       justifyContent: "flex-start",
-      width: Math.round(width * 0.75 - 100),
+      width: Math.round(width * 0.7 - 100),
     },
     contentNav: {
       height: 65,
@@ -181,7 +181,7 @@ const DashboardScreen = ({ props, navigation }) => {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "flex-start",
-      width: Math.round(width * 0.75 - 220),
+      width: Math.round(width * 0.7 - 220),
     },
     filters: {
       display: "flex",
@@ -343,8 +343,8 @@ const DashboardScreen = ({ props, navigation }) => {
     setActionConsulatationCategory,
   ] = useState(null);
   const [
-    actionValueConsulatationDecison,
-    setActionConsulatationDecison,
+    actionValueConsulatationDecision,
+    setActionConsulatationDecision,
   ] = useState("HI");
   const [active, setActive] = useState(null);
   const [filterMenu, setFilterMenu] = useState(false);
@@ -357,6 +357,7 @@ const DashboardScreen = ({ props, navigation }) => {
   const [otherSymptoms, setOtherSymptoms] = useState(null);
   const [admitted, setAdmitted] = useState(false);
   const [symptomsMenu, setSymptomsMenu] = useState(false);
+  const [actionDataVolunteer, setActionDataVolunteer] = useState([]);
 
   useEffect(() => {
     if (status && at(asyncState, "token")) {
@@ -374,6 +375,21 @@ const DashboardScreen = ({ props, navigation }) => {
         );
         setLoader(true);
       }
+      if(at(executeDataResponse, 'UPDATE_STATE.isDone')) {
+        if(patients.length > 0) {
+          dispatch(
+            clearData({
+              type: "FETCH_PATIENTS",
+            })
+          );
+          dispatch(
+            clearData({
+              type: "UPDATE_STATE",
+            })
+          );
+          setPatients([]);
+        }
+      }
       if (!at(executeDataResponse, "GET_COUNT.isInitiated")) {
         dispatch(
           executeData({
@@ -384,17 +400,27 @@ const DashboardScreen = ({ props, navigation }) => {
         );
         setLoader(true);
       }
+     
       if (
         at(executeDataResponse, "CONSULTATION_DOCTOR.isDone") ||
         at(executeDataResponse, "CONSULTATION_DOCTOR.isError")
       ) {
         setLoader(false);
         setDidNavRootView("COUNT");
-        dispatch(
-          clearData({
-            type: "CONSULTATION_DOCTOR",
-          })
-        );
+        if(patients.length > 0) {
+          dispatch(
+            clearData({
+              type: "FETCH_PATIENTS",
+            })
+          );
+          dispatch(
+            clearData({
+              type: "CONSULTATION_DOCTOR",
+            })
+          );
+          setPatients([]);
+        }
+       
       }
       if (at(executeDataResponse, "GET_COUNT.isDone")) {
         if (!countData) {
@@ -412,22 +438,50 @@ const DashboardScreen = ({ props, navigation }) => {
       }
     }
   });
-
-  const handleRowView = (id, row) => {
-    setDidNavRootView("PATIENT");
-    setActiveRow(row);
-    setActive(id);
-    setActionConsulatationSymptoms([]);
-    setActionConsulatationDecison("HI");
-    setActionConsulatationCategory(null);
-  };
-
-  const actionDataVolunteer = [
+  const actionDataVolunteerList = [
     { label: "NOT ATTENDED", value: "not_attended" },
     { label: "ATTEND", value: "attending_by_volunteer" },
     { label: "FORWARD TO DOCTOR", value: "forwarded_to_doctor" },
     { label: "CLOSE CASE", value: "closed_by_volunteer" },
   ];
+
+  const handleRowView = (id, row) => {
+    setDidNavRootView("PATIENT");
+    setActiveRow(row);
+    setActive(id);
+    
+    setActionConsulatationSymptoms([]);
+    setActionConsulatationDecision("HI");
+    setActionConsulatationCategory(null);
+    let actionData = [...actionDataVolunteerList];
+    if(row.status === 'not_attended') {
+      actionData.splice(0, 1);
+      setActionDataVolunteer(actionData)
+    }
+    if(row.status === 'attending_by_volunteer') {
+      actionData.splice(0, 2);
+
+      setActionDataVolunteer(actionData)
+    }
+    if(row.status === 'forwarded_to_doctor') {
+      actionData.splice(0, 3);
+
+      setActionDataVolunteer(actionData)
+    }
+    if(row.status === 'closed_by_doctor') {
+      actionData.splice(0, 3);
+
+      setActionDataVolunteer(actionData)
+    }
+    if(row.status === 'closed_by_volunteer') {
+      actionData.splice(0, 4);
+
+      setActionDataVolunteer(actionData)
+    }
+  };
+
+
+  
 
   const actionDataSymptoms = [
     { value: 1, label: "ASYMPTOMATIC" },
@@ -468,7 +522,9 @@ const DashboardScreen = ({ props, navigation }) => {
     { label: "NOT ATTENDED", value: "not_attended" },
     { label: "ATTENDED", value: "attending_by_volunteer" },
     { label: "FORWARDED TO DOCTOR", value: "forwarded_to_doctor" },
+    { label: "CLOSED BY DOCTOR", value: "closed_by_doctor" },
     { label: "CLOSED CASES", value: "closed_by_volunteer" },
+    
   ];
   const profileMenu = [{ label: "LOGOUT", value: "logout" }];
   var colorArray = [
@@ -518,18 +574,16 @@ const DashboardScreen = ({ props, navigation }) => {
         req: data,
       })
     );
-    dispatch(
-      clearData({
-        type: "FETCH_PATIENTS",
-      })
-    );
-    setPatients([]);
+    
   };
 
-  const handleStateAction = () => {
+  
+
+  const handleStateAction =  () => {
+    ReloadCount();
     let requestId = at(activeRow, "request_id");
     setLoader(true);
-    dispatch(
+     dispatch(
       executeData({
         method: "GET",
         type: "UPDATE_STATE",
@@ -540,12 +594,17 @@ const DashboardScreen = ({ props, navigation }) => {
         },
       })
     );
-    dispatch(
-      clearData({
-        type: "FETCH_PATIENTS",
-      })
-    );
-    setPatients([]);
+   
+    // setPatients([]);
+    setActiveRow(null)
+    setDidNavRootView('COUNT');
+    setActionValueVolunteer(null);
+    // dispatch(
+    //   clearData({
+    //     type: "FETCH_PATIENTS",
+    //   })
+    // );
+
   };
   const handleMenuProfile = (item) => {
     setLogoutMenu(false);
@@ -566,6 +625,12 @@ const DashboardScreen = ({ props, navigation }) => {
     }
   };
 
+  const ReloadCount = () => {
+    dispatch(clearData({
+      type: 'GET_COUNT'
+    }))
+  }
+
   const pageNavigation = (page) => {
     if (page) {
       dispatch(
@@ -580,8 +645,9 @@ const DashboardScreen = ({ props, navigation }) => {
 
   const handleConsultation = (id) => {
     setLoader(true);
+    ReloadCount();
     let req = {
-      suggestion: actionValueConsulatationDecison,
+      suggestion: actionValueConsulatationDecision,
       category: actionValueConsulatationCategory,
       admitted: admitted,
       examination_details: examination,
@@ -591,6 +657,9 @@ const DashboardScreen = ({ props, navigation }) => {
       symptoms: actionValueConsulatationSymptoms,
       request_id: at(activeRow, "request_id"),
     };
+    if(!actionValueConsulatationSymptoms.length > 0) {
+      req.symptoms= [1]
+    }
     if (otherSymptoms) {
       req.other_symptoms = otherSymptoms;
     }
@@ -602,6 +671,10 @@ const DashboardScreen = ({ props, navigation }) => {
         req: JSON.stringify(req),
       })
     );
+    // setPatients([]);
+    // dispatch(clearData({
+    //   type: 'FETCH_PATIENTS'
+    // }))
   };
 
   return (
@@ -764,7 +837,7 @@ const DashboardScreen = ({ props, navigation }) => {
                         ? true
                         : false
                     }
-                    width={Math.round(width * 0.75 - 100)}
+                    width={Math.round(width * 0.7 - 100)}
                     active={active}
                     pageCount={
                       at(
@@ -835,6 +908,17 @@ const DashboardScreen = ({ props, navigation }) => {
                   >
                     {at(asyncState, "metaData.ROLE")
                       ? at(asyncState, "metaData.ROLE").replace("_", " ")
+                      : "Unknown"}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "600",
+                      color: theme.paragraph,
+                    }}
+                  >
+                    {( at(asyncState, "metaData.ROLE") && at(asyncState, "metaData.district"))
+                      ? at(asyncState, "metaData.district").replace("_", " ")
                       : "Unknown"}
                   </Text>
                 </View>
@@ -1090,6 +1174,15 @@ const DashboardScreen = ({ props, navigation }) => {
                             {at(activeRow, "last_consultation.suggestion_text").toLowerCase()}
                           </Text>
                         ) : null}
+                         {at(activeRow, "last_consultation.symptoms") ?<Text
+                                  style={[
+                                    styles.textBold,
+                                    { marginTop: 4, textTransform: "capitalize" },
+                                  ]}
+                                >
+                                 
+                                  Symptoms: 
+                                </Text> : null}
                        {at(activeRow, "last_consultation.symptoms") ? (
                           at(activeRow, "last_consultation.symptoms").map((value) => {
                             return actionDataSymptoms.map((item) => {
@@ -1101,14 +1194,14 @@ const DashboardScreen = ({ props, navigation }) => {
                                     { marginTop: 4, textTransform: "capitalize" },
                                   ]}
                                 >
-                                  Symptoms:{" "}
+                                 
                                   {item.label.toLowerCase()}
                                 </Text>
                                 )
                               }  else if(item.label === 'OTHERS' && item.value === value) {
                                 <Text
                                 style={[
-                                  styles.text,
+                                  styles.textBold,
                                   { marginTop: 4, textTransform: "capitalize" },
                                 ]}
                               >
@@ -1125,7 +1218,7 @@ const DashboardScreen = ({ props, navigation }) => {
                         {at(activeRow, "last_consultation.category") ? (
                           <Text
                             style={[
-                              styles.text,
+                              styles.textBold,
                               { marginTop: 4, textTransform: "capitalize" },
                             ]}
                           >
@@ -1136,7 +1229,7 @@ const DashboardScreen = ({ props, navigation }) => {
                         {at(activeRow, "last_consultation.examination_details") ? (
                           <Text
                             style={[
-                              styles.text,
+                              styles.textBold,
                               { marginTop: 4, textTransform: "capitalize" },
                             ]}
                           >
@@ -1147,7 +1240,7 @@ const DashboardScreen = ({ props, navigation }) => {
                         {at(activeRow, "last_consultation.existing_medication") ? (
                           <Text
                             style={[
-                              styles.text,
+                              styles.textBold,
                               { marginTop: 4, textTransform: "capitalize" },
                             ]}
                           >
@@ -1158,7 +1251,7 @@ const DashboardScreen = ({ props, navigation }) => {
                          {at(activeRow, "last_consultation.prescribed_medication") ? (
                           <Text
                             style={[
-                              styles.text,
+                              styles.textBold,
                               { marginTop: 4, textTransform: "capitalize" },
                             ]}
                           >
@@ -1182,8 +1275,10 @@ const DashboardScreen = ({ props, navigation }) => {
                                 : at(activeRow, "status")
                             }
                             onValueChange={(value) => {
-                              if (value && value !== actionValueVolunteer) {
+                              if (value && value !== actionValueVolunteer && value !== 'Select an Action') {
                                 setActionValueVolunteer(value);
+                              } else if(value && value === 'Select an Action') {
+                                setActionValueVolunteer(null);
                               }
                             }}
                             items={
@@ -1205,6 +1300,8 @@ const DashboardScreen = ({ props, navigation }) => {
                         >
                           <ContainedButton
                             width={80}
+                            opacity={actionValueVolunteer ?  1 : 0.5}
+                            disabled={actionValueVolunteer ?  false : true}
                             textColor={theme.white}
                             color={theme.success}
                             text={"Save"}
@@ -1469,19 +1566,19 @@ const DashboardScreen = ({ props, navigation }) => {
                           items={actionDataCategory}
                         />
                         <Text style={styles.text}>
-                          Decision after Consultation():
+                          Decision after Consultation:
                         </Text>
 
                         <RNPickerSelect
                           style={pickerSelectStyles}
                           placeholder={placeholderActionDecision}
-                          value={actionValueConsulatationDecison}
+                          value={actionValueConsulatationDecision}
                           onValueChange={(value) => {
                             if (
                               value &&
-                              value !== actionValueConsulatationDecison
+                              value !== actionValueConsulatationDecision
                             ) {
-                              setActionConsulatationDecison(value);
+                              setActionConsulatationDecision(value);
                             }
                           }}
                           items={actionDataDecision}

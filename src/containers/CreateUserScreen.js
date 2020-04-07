@@ -165,7 +165,8 @@ const AuthScreen = ({ navigation, props }) => {
         }
         break;
       case "AGE":
-        if (age) {
+        let ageRegex = new RegExp('^[0-9]*$');
+        if (age && ageRegex.test(age)) {
           setView("GENDER");
         } else {
           setAgeError(true);

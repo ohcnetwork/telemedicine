@@ -23,6 +23,12 @@ const Input = props => {
     <TextInput
     secureTextEntry={props.secureTextEntry ? props.secureTextEntry : false}
       allowFontScaling
+      onKeyPress={(e) => {
+        if(props.returnKeyType) {
+          props.onKeyPress(e)
+        }
+      }}
+      returnKeyType={props.returnKeyType ? props.returnKeyType : 'next'}
       textContentType={props.textContentType ? props.textContentType : 'none'}
       autoCompleteType={props.autoCompleteType ? props.autoCompleteType : 'off'}
       placeholder={props.placeholder}

@@ -30,6 +30,7 @@ const RiskScreen = ({ props, navigation }) => {
   const [total, setTotal] = useState([]);
   const [user, setUser] = useState(null);
   const [answerState, setAnswerState] = useState(false);
+  const [navigate, setNavigate] = useState(false);
 
   let saveAsync = useSelector(state => {
     return state.AsyncStorageReducer;
@@ -81,6 +82,13 @@ const RiskScreen = ({ props, navigation }) => {
         setTotal([]);
       }
     }
+    if(navigate) {
+     let data = navigation.getParam("navigateParam", {});
+     if(data === false) {
+       setNavigate(false);
+     }
+    }
+
   });
 
   let width = Math.round(Dimensions.get("window").width);
@@ -176,9 +184,13 @@ const RiskScreen = ({ props, navigation }) => {
     }
   });
 
+
   const handleAnswerChoose = value => {
     let answer = answers;
     let totalValue = [...total];
+    if(!navigate) {
+
+    
 
     switch (value) {
       case 0:
@@ -248,6 +260,7 @@ const RiskScreen = ({ props, navigation }) => {
       default:
         break;
     }
+  }
   };
 
   const handleSubmitAnswerDispatch = (totalValue, answer) => {
@@ -290,15 +303,17 @@ const RiskScreen = ({ props, navigation }) => {
     if (activeQuestionCount === Object.keys(questions).length) {
       if (at(executeDataResponse, "SEND_ANSWERS.isDone")) {
         let dataResponse = at(executeDataResponse, "SEND_ANSWERS.data");
+        setNavigate(true);
         navigation.navigate("Result", { data: dataResponse });
-        setActiveQuestionCount(1);
-        setAnswers({});
-        setTotal([]);
+  
         dispatch(
           clearData({
             type: "SEND_ANSWERS"
           })
         );
+        setActiveQuestionCount(1);
+        setAnswers({});
+        setTotal([]);
       }
     }
   });
@@ -398,6 +413,7 @@ const RiskScreen = ({ props, navigation }) => {
                 onPress={() => {
                   handleAnswerChoose(0);
                 }}
+                disabled={(Object.keys(questions).length > activeQuestionCount) ? false : true}
                 fontSize={12}
                 color={theme.success}
                 text={i18n.t("no")}
@@ -412,6 +428,7 @@ const RiskScreen = ({ props, navigation }) => {
                 mRight={2}
                 width={width * 0.25}
                 text={i18n.t("yes")}
+                disabled={(Object.keys(questions).length > activeQuestionCount) ? false : true}
                 color={theme.button}
                 textColor={theme.white}
               />

@@ -436,7 +436,9 @@ const AuthScreen = ({ navigation, props }) => {
         }
         break;
       case "AGE":
-        if (age) {
+        let ageRegex = new RegExp('^[0-9]*$');
+
+        if (age && ageRegex.test(age)) {
           dispatch(saveToStore({ metaData: { age: age } }));
           setView("GENDER");
         } else {
@@ -493,10 +495,12 @@ const AuthScreen = ({ navigation, props }) => {
         }
         break;
       case "ADDRESS":
-        if (at(address, "postalCode")) {
+
+        if (localityValue) {
           dispatch(saveToStore({ metaData: { local_body: localityValue } }));
           setView("PEOPLE");
         } else {
+          setLocalityError(true);
           return;
         }
         break;
@@ -790,18 +794,18 @@ const AuthScreen = ({ navigation, props }) => {
           <Text style={styles.labelText}>{i18n.t("enter_address")}</Text>
         </View>
         <View style={styles.textFieldLocation}>
-          <Text style={styles.labelText2}>{i18n.t("locality")}</Text>
+          <Text style={styles.labelText2}>{i18n.t("locality")}*</Text>
           <View
             style={{
               ...styles.selectTextFieldContainer,
               ...{
-                borderBottomColor: districtError ? theme.error : theme.button,
+                borderBottomColor: localityError ? theme.error : theme.button,
               },
             }}
           >
             <RNPickerSelect
               style={pickerSelectStyles}
-              placeholder={placeholderDistrict}
+              placeholder={placeholderLocality}
               value={localityValue}
               onValueChange={(value) => {
                 setLocalityError(false);
@@ -818,28 +822,14 @@ const AuthScreen = ({ navigation, props }) => {
               }
             />
           </View>
-          <Text style={styles.labelText2}>{i18n.t("pincode")}</Text>
-          <TextInput
-            borderColor={
-              !at(address, "postalCode") ? theme.error : theme.button
-            }
-            onChange={(e) => {
-              setAddress((address) => {
-                return { ...address, ...{ postalCode: e } };
-              });
-            }}
-            defaultValue={
-              at(address, "postalCode") ? at(address, "postalCode") : null
-            }
-            keyboardType="numeric"
-          />
+         
         </View>
         <TouchableOpacity onPress={handleNavigation}>
           <AntDesign
             name={
-              !at(address, "postalCode") ? "exclamationcircle" : "rightcircle"
+              ( (localityError)) ? "exclamationcircle" : "rightcircle"
             }
-            color={!at(address, "postalCode") ? theme.error : theme.button}
+            color={( (localityError)) ? theme.error : theme.button}
             size={50}
           />
         </TouchableOpacity>
@@ -997,7 +987,11 @@ const AuthScreen = ({ navigation, props }) => {
     value: null,
     color: theme.paragraph,
   };
-
+  const placeholderLocality = {
+    label: "Select Locality",
+    value: null,
+    color: theme.paragraph,
+  };
   const handleNumberInput = () => {
     return (
       <View style={styles.inputContainer}>
@@ -1189,6 +1183,12 @@ const AuthScreen = ({ navigation, props }) => {
             ]}
           >
             <TextInput
+              returnKeyType="done"
+              onKeyPress={(e) => {
+                if(e.nativeEvent.key === 'Enter') {
+                  handleNavigation()
+                }
+              }}
               backgroundColor={theme.white}
               secureTextEntry={true}
               textContentType="password"
@@ -1515,31 +1515,7 @@ const AuthScreen = ({ navigation, props }) => {
               {i18n.t("kidney")}
             </Text>
           </View>
-          <View
-            style={[
-              styles.buttonFieldContainer,
-              { justifyContent: "flex-start" },
-            ]}
-          >
-            <CheckBox
-              value={chronicDisease["Taking Steroids"] ? true : false}
-              onValueChange={() =>
-                setChronicDisease((value) => {
-                  return {
-                    ...value,
-                    ...{
-                      "Taking Steroids": value["Taking Steroids"]
-                        ? false
-                        : true,
-                    },
-                  };
-                })
-              }
-            />
-            <Text style={[styles.labelText, { fontSize: 14, marginLeft: 10 }]}>
-              {i18n.t("steroids")}
-            </Text>
-          </View>
+          
           <View
             style={[
               styles.buttonFieldContainer,
