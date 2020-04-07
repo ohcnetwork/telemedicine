@@ -256,7 +256,7 @@ const ResultScreen = ({ props, navigation }) => {
             onPress={() => handleRequestCall()}
               width={width * 0.6}
               color={at(executeDataResponse, 'REQUEST_CALL_USER.data.message')? theme.success: theme.button}
-              text={at(executeDataResponse, 'REQUEST_CALL_USER.data.message')? "Call Requestd" : "Request For Medical Call"}
+              text={at(executeDataResponse, 'REQUEST_CALL_USER.data.message')? "Call Requested" : "Request For Medical Call"}
               textColor={theme.white}
             />
           )}
