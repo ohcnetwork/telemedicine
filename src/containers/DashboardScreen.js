@@ -25,6 +25,7 @@ import { executeData, clearData } from "../store/actions/ExecuteData";
 import { clearStore } from "../store/actions/SaveAsync";
 import Menu from "../components/menu/Menu";
 import AddNewPatient from "./AddNewPatient";
+import moment from 'moment';
 async function getDevice() {
   let device = 0;
   device = await Device.getDeviceTypeAsync();
@@ -1066,6 +1067,16 @@ const DashboardScreen = ({ props, navigation }) => {
                             ]}
                           >
                             Last Consultation Details:{" "}
+                          </Text>
+                        ) : null}
+                         {at(activeRow, "last_consultation") ? (
+                          <Text
+                            style={[
+                              styles.textBold,
+                              { marginTop: 4, color: theme.button },
+                            ]}
+                          >
+                            Consultation Time:{" "} {moment(at(activeRow, 'updated_at' )).format('MMMM Do YYYY, h:mm:ss a')}
                           </Text>
                         ) : null}
                         {at(activeRow, "last_consultation.suggestion_text") ? (
